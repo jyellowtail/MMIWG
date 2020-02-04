@@ -1,0 +1,2042 @@
+---
+title: "MMIWG1 Descriptive Statistics (Updated w/Julisa Code)"
+author: "Jamie Yellowtail"
+date: "9/8/2019"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+## Necessary Packages
+#{r load packages}
+library(psych) # For reverse coding variables, reading data files and item analysis
+library(multicon) # For creating composites
+library(tidyverse)
+#install.packages("haven")
+library(haven)
+#install.packages("labelled")
+library(labelled)
+#install.packages("nFactors")
+library(nFactors) # Determines how many factors to extract
+library(dplyr) #clean up data
+#install.packages("corrplot")
+library(corrplot) # For correlation matrix
+library(GGally)
+#install.packages("Rmisc") #Multiplot
+library(Rmisc)
+
+```
+
+## Functions to center things
+```{r functions}
+
+center<-function(MOD)
+{
+  centered<-MOD-mean(MOD,na.rm=TRUE)
+  return(centered)
+}
+
+low<-function(MOD)
+{
+  low<-(MOD-mean(MOD,na.rm=TRUE))+sd(MOD, na.rm=TRUE)
+  return(low)
+}
+
+high<-function(MOD)
+{
+  high<-(MOD-mean(MOD, na.rm=TRUE))-sd(MOD, na.rm=TRUE)
+  return(high)
+}
+
+gmc <- function(MOD, grp)
+  {
+  gmcentered<- (MOD-tapply(MOD,grp,mean,na.rm=TRUE)[grp])
+  return(gmcentered)
+
+}
+
+```
+
+## Prepping Data File
+```{r Read Data File}
+
+data <- read.csv("MMIWG.csv")
+
+data <- data %>% 
+  dplyr::rename(Mauna_Kea = Movements_16)
+
+#view(data)
+```
+
+#Knowledge of Social Movements
+```{r}
+#Social Movements
+SocialMovements.df <- data.frame(data$MeToo,
+                data$March4lives,
+                data$BLM,
+                data$AllLives,
+                data$ZeroHour,
+                data$BlueLives,
+                data$MenRights,
+                data$WhiteNationa,
+                data$StraightPride,
+                data$LGBTQ,
+                data$Right2Life,
+                data$Timesup,
+                data$MMIWG,
+                data$NativeLives,
+                data$NODAPL,
+                data$Mauna_Kea)
+
+psych::alpha(SocialMovements.df, check.keys = TRUE)
+
+SocialMovements.comp <- multicon::composite(SocialMovements.df, rel=TRUE, nomiss = 0)
+
+#Native Social Movements
+NativeSM.df <- data.frame(data$MMIWG,
+                data$NativeLives,
+                data$NODAPL,
+                data$Mauna_Kea)
+
+psych::alpha(NativeSM.df, check.keys = TRUE)
+
+NativeSM.comp <- multicon::composite(NativeSM.df, rel=TRUE, nomiss = 0)
+
+#Non-Native Social Movements
+NonNativeSM.df <- data.frame(data$MeToo,
+                data$March4lives,
+                data$BLM,
+                data$AllLives,
+                data$ZeroHour,
+                data$BlueLives,
+                data$MenRights,
+                data$WhiteNationa,
+                data$StraightPride,
+                data$LGBTQ,
+                data$Right2Life,
+                data$Timesup)
+
+psych::alpha(NonNativeSM.df, check.keys = TRUE)
+
+NonNativeSM.comp <- multicon::composite(NonNativeSM.df, rel=TRUE, nomiss = 0)
+
+#POC Centered Social Movements
+POCSM.df <- data.frame(data$BLM,
+                data$MMIWG,
+                data$NativeLives,
+                data$NODAPL,
+                data$Mauna_Kea)
+
+psych::alpha(POCSM.df, check.keys = TRUE)
+
+POCSM.comp <- multicon::composite(POCSM.df, rel=TRUE, nomiss = 0)
+
+#NonPOC Centered Social Movements
+NonPOCSM.df <- data.frame(data$MeToo,
+                data$March4lives,
+                data$AllLives,
+                data$ZeroHour,
+                data$BlueLives,
+                data$MenRights,
+                data$WhiteNationa,
+                data$StraightPride,
+                data$LGBTQ,
+                data$Right2Life,
+                data$Timesup)
+
+psych::alpha(NonPOCSM.df, check.keys = TRUE)
+
+NonPOCSM.comp <- multicon::composite(NonPOCSM.df, rel=TRUE, nomiss = 0)
+
+#Liberal Associated Social Movements
+LiberalSM.df <- data.frame(data$MeToo,
+                data$March4lives,
+                data$BLM,
+                data$ZeroHour,
+                data$LGBTQ,
+                data$Timesup,
+                data$MMIWG,
+                data$NativeLives,
+                data$NODAPL,
+                data$Mauna_Kea)
+
+psych::alpha(LiberalSM.df, check.keys = TRUE)
+
+LiberalSM.comp <- multicon::composite(LiberalSM.df, rel=TRUE, nomiss = 0)
+
+#Conservative Associated Social Movements
+ConservSM.df <- data.frame(data$AllLives,
+                data$BlueLives,
+                data$MenRights,
+                data$WhiteNationa,
+                data$StraightPride,
+                data$Right2Life)
+
+psych::alpha(ConservSM.df, check.keys = TRUE)
+
+ConservSM.comp <- multicon::composite(ConservSM.df, rel=TRUE, nomiss = 0)
+
+#Environmental Social Movements
+EnvirSM.df <- data.frame(data$ZeroHour,
+                data$NativeLives,
+                data$NODAPL,
+                data$Mauna_Kea)
+
+psych::alpha(EnvirSM.df, check.keys = TRUE)
+
+EnvirSM.comp <- multicon::composite(EnvirSM.df, rel=TRUE, nomiss = 0)
+
+#Women's Social Movements
+WomenSM.df <- data.frame(data$MeToo,
+                data$Timesup,
+                data$MMIWG)
+
+psych::alpha(WomenSM.df, check.keys = TRUE)
+
+WomenSM.comp <- multicon::composite(WomenSM.df, rel=TRUE, nomiss = 0)
+
+```
+
+# How did you become familiar with MMIWG?
+
+```{r}
+source_raw.df <- data.frame(data$IF_FAMILIAR_1,
+                data$IF_FAMILIAR_2,
+                data$IF_FAMILIAR_3,
+                data$IF_FAMILIAR_6,
+                data$IF_FAMILIAR_7,
+                data$IF_FAMILIAR_8,
+                data$IF_FAMILIAR_10,
+                data$IF_FAMILIAR_11,
+                data$IF_FAMILIAR_13,
+                data$IF_FAMILIAR_14,
+                data$IF_FAMILIAR_15)
+
+source_count <- colSums(source_raw.df, na.rm=TRUE)
+source_count
+
+plot(source_count, type = "h")
+
+```
+
+# What is your primary source of information on MMIWG?
+```{r}
+primsource <- (table(data$SourceOnMMIWG))
+
+plot(primsource)
+```
+#Attitudes and Beliefs that Contribute to MMIWG
+```{r}
+# higher signifies more negative attitudes
+
+att <- data %>%
+  dplyr::select(
+    AB_Activists,
+    AB_SexWork,
+    AB_NonNative_pers,
+    AB_Rez,
+    AB_Citizens,
+    AB_Runaways,
+    AB_Drug,
+    AB_MaleWorker,
+    AB_Criminal,
+    AB_TwoParent,
+    AB_TribalPolice,
+    AB_Poverty,
+    AB_NativeComm,
+    AB_Society,
+    AB_Abusive,
+    AB_Laws
+    )
+
+att.key = c(1, 1, -1, 1, -1, 1, 1, -1,
+               1, 1, -1, 1, 1, 1, 1, -1) #Reverse Scoring
+
+att.r <-
+  reverse.code(att.key,
+               att,
+               mini = 1,
+               maxi = 7)
+
+att.df <- as.data.frame(att.r)
+
+att.df[is.na(att.df)] <- 0
+
+```
+
+# Item analysis of Attitudes
+```{r}
+psych::alpha(att.df, check.keys = TRUE)
+
+att.comp <- multicon::composite(att.df, rel=TRUE, nomiss = 0)
+```
+
+# Determining the number of factors to extract
+```{r}
+ev.att <- eigen(cor(att.df))
+ap.att <- parallel(subject=nrow(att.df),var=ncol(att.df),
+               rep = 100, cent = .05)
+nS.att <- nScree(x=ev.att$values, apparallel = ap.att$eigen$qevpea)
+plotnScree(nS.att)
+```
+
+# Factor loadings
+```{r}
+fit.att <- factanal(att.df, 3, rotation = "varimax")
+print(fit.att, digits = 2, cutoff = .3, sort = TRUE)
+```
+
+1. Factor 1 - Victim Blaming
++ MMIWG are not as big of a problem as activists would like people to think.
++ MMIWG were involved in sex work.
++ MMIWG only takes place on the reservation.
++ MMIWG under 18 were runaways.
++ MMIWG were using drugs and/or alcohol.
++ MMIWG were involved in criminal activity.
+
+2. Factor 2 - Institution level and outside factors
++ MMIWG are a result of violence perpetrated by non-Natives.
++ Ending the MMIWG crisis is the responsibility of all U.S. citizens.
++ Non-native male workers that live near reservations contribute to the high rates of  MMIWG.
++ Tribal police forces do not have the resources to prevent + Native women from being murdered and going missing.
++ Policies and laws that make it difficult to prosecute Non-native offenders contribute to the epidemic of MMIWG.
+
+3. Factor 3 - Community issue
++ The lack of two parent homes in tribal communities puts Native American girls at risk of going missing.
++ MMIWG are the result of poverty within Native communities.
++ Native women are murdered and go missing because Native communities do not value Native women.
++ MMIWG under 18 come from abusive homes.
++ Native women are murdered and go missing because U.S. society does not value Native women.
+
+# Victim Blaming subscale
+```{r}
+vicblame.raw <- data %>%
+  dplyr::select(
+    AB_Activists,
+    AB_SexWork,
+    AB_Rez,
+    AB_Runaways,
+    AB_Drug,
+    AB_Criminal
+    )
+
+vicblame.key <- c(1, 1, 1, 1, 1, 1)
+
+vicblame.r <- reverse.code(vicblame.key,
+                           vicblame.raw,
+                           mini = 1,
+                           maxi = 7)
+
+vicblame.df <- as.data.frame(vicblame.r)
+
+vicblame.comp <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0)
+```
+
+# External Factors subscale
+```{r}
+externfactors.raw <- data %>%
+  dplyr::select(
+    AB_NonNative_pers,
+    AB_Citizens,
+    AB_MaleWorker,
+    AB_TribalPolice,
+    AB_Laws
+    )
+
+externfactors.key <- c(-1, -1, -1, -1, -1)
+
+externfactors.r <- reverse.code(externfactors.key,
+                                externfactors.raw,
+                                mini=1,
+                                maxi=7)
+
+externfactors.df <- as.data.frame(externfactors.r)
+
+externfactors.comp <- multicon::composite(externfactors.df, rel = TRUE, nomiss=0)
+```
+
+# Community Blame subscale
+```{r}
+
+commblame.raw <- data %>%
+  dplyr::select(
+    AB_TwoParent,
+    AB_Poverty,
+    AB_NativeComm,
+    AB_Abusive,
+    AB_Society
+    )
+
+commblame.key <- c(1, 1, 1, 1, 1)
+
+commblame.r <-
+  reverse.code(commblame.key,
+               commblame.raw,
+               mini = 1,
+               maxi = 7)
+
+commblame.df <- as.data.frame(commblame.r)
+
+commblame.comp <- multicon::composite(commblame.df, rel = TRUE, nomiss = 0)
+
+```
+
+#Support for MMIWG
+```{r}
+# Higher values = more support
+
+sup <- data %>%
+  dplyr::select(Sup_Hash,
+                Sup_Letter,
+                Sup_Donate,
+                Sup_Authority,
+                Sup_Prosecute,
+                Sup_Access,
+                Sup_Training
+                )
+
+sup.df <- as.data.frame(sup)
+
+sup.df[is.na(sup.df)] <- 0
+```
+
+#Determining the number of factors to extract
+```{r}
+ev.sup <- eigen(cor(sup.df))
+ap.sup <- parallel(subject=nrow(sup.df),var=ncol(sup.df),
+               rep = 100, cent = .05)
+nS.sup <- nScree(x=ev.sup$values, apparallel = ap.sup$eigen$qevpea)
+plotnScree(nS.sup)
+```
+
+# Factor Loadings
+```{r}
+fit.sup <- factanal(sup.df, 1, rotation = "varimax")
+print(fit.sup, digits = 2, cutoff = .3, sort = TRUE)
+```
+
+#Item and overall analysis of support (5 point scale, Def not to Def)
+```{r}
+psych::alpha(sup.df, check.keys = TRUE)
+
+sup.com <-
+  multicon::composite(sup,
+  rel = TRUE,
+  nomiss = 0)
+
+```
+
+# Who is responsible for stopping the epidemic of MMIWG?
+```{r}
+stop.df <- data.frame(data$Res_Stopping_1,
+                       data$Res_Stopping_2,
+                       data$Res_Stopping_3,
+                       data$Res_Stopping_4)
+
+psych::alpha(stop.df, check.keys = TRUE)
+
+stop.comp <-
+  multicon::composite(stop.df,
+  rel = TRUE,
+  nomiss = 0)
+```
+
+# Who is responsible for preventing individual MMIWG attacks?
+```{r}
+prev.df <- data.frame(data$Res_Preventing_1,
+                      data$Res_Preventing_2,
+                      data$Res_Preventing_3,
+                      data$Res_Preventing_4
+                      )
+prev.comp <-
+  multicon::composite(prev.df,
+  rel = TRUE,
+  nomiss = 0)
+psych::alpha(prev.df, check.keys = TRUE)
+```
+
+# Who is responsible for bringing awareness to MMIWG?
+```{r}
+awar.df <- data.frame(data$Res_Awareness_1,
+                      data$Res_Awareness_2,
+                      data$Res_Awareness_3,
+                      data$Res_Awareness_4
+                      )
+awar.comp <-
+  multicon::composite(awar.df,
+  rel = TRUE,
+  nomiss = 0)
+psych::alpha(awar.df, check.keys = TRUE)
+```
+
+#Invisibility
+```{r}
+# Higher values = greater invisibility
+
+data.in <- data %>%
+  dplyr::rename(NtvInvisibility_7 = Invisibility1_13,
+         NtvInvisibility_8 = Invisibility1_14,
+         NtvInvisibility_9 = Invisibility1_15,
+         NtvInvisibility_10 = Invisibility1_16,
+         NtvInvisibility_11 = Invisibility1_17,
+         NtvInvisibility_12 = Invisibility1_18)
+
+in.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_1,
+    NtvInvisibility_2,
+    NtvInvisibility_3,
+    NtvInvisibility_4,
+    NtvInvisibility_5,
+    NtvInvisibility_6,
+    NtvInvisibility_7,
+    NtvInvisibility_8,
+    NtvInvisibility_9,
+    NtvInvisibility_10,
+    NtvInvisibility_11,
+    NtvInvisibility_12,
+    IN_Violence
+    )
+
+in.key <- c(1, -1, 1, 1,
+           1, 1, 1, -1,
+           1, 1, 1, 1, 1)
+
+in.r <-
+  reverse.code(in.key,
+               in.raw,
+               mini = 1,
+               maxi = 7)
+
+in.df <- as.data.frame(in.r)
+
+in.df[is.na(in.df)] <- 0
+
+```
+
+# Determining number of factors to extract
+```{r}
+ev.in <- eigen(cor(in.df))
+ap.in <- parallel(subject=nrow(in.df),var=ncol(in.df),
+               rep = 100, cent = .05)
+nS.in <- nScree(x=ev.in$values, apparallel = ap.in$eigen$qevpea)
+plotnScree(nS.in)
+```
+
+# Factor loadings
+```{r}
+fit.in <- factanal(in.df, 3, rotation = "varimax")
+print(fit.in, digits = 2, cutoff = .3, sort = TRUE)
+```
+
+Factor 1 - Individual perceptions
++ I rarely think about Native/Indigenous Americans in contemporary society.
++ When I think about poverty, Native/Indigenous Americans do not come to mind.
++ When I think about groups that experience racism and discrimination Native/Indigenous Americans do not come to mind.
++ When I think about successful Americans, Native/Indigenous do not come to mind.
++ When I think about actors and actresses, Native/Indigenous Americans do not come to mind.
++ When I think about healthy families, Native/Indigenous Americans do not come to mind.
++ When I think of violence against women, Native women do not come to mind.
+
+Factor 2
++ Native/Indigenous Americans are invisible in contemporary society.
++ I rarely hear about Native/Indigenous Americans in contemporary society.
+
+Factor 3
++ There are hardly any Native/Indigenous Americans left in U.S. society.
++ In contemporary society, there are not any real  Native/Indigenous Americans.
+
+Factor 4
++ There is a significant number of Native/Indigenous Americans who live in U.S. society today.
++ When I think about health disparities, Native/Indigenous Americans come to mind.
+
+# Item analysis
+```{r}
+psych::alpha(in.df, check.keys = TRUE)
+
+in.com <-
+  multicon::composite(in.df,
+  rel = TRUE,
+  nomiss = 0)
+```
+
+# Sovereignty
+```{r}
+# Higher values = more knowledge about sovereignty
+
+sov.raw <- data %>%
+  dplyr::select(
+    Sov_Rules,
+    Sov_Legal,
+    Sov_Police,
+    Sov_Gov,
+    Sov_Auto,
+    Sov_Rely,
+    Sov_Jurisdiction)
+
+sov.key <- c(1, -1, 1, 1,
+             1, -1, -1)
+
+sov.r <- reverse.code(sov.key,
+                      sov.raw,
+                      mini = 1,
+                      maxi = 7)
+
+sov.df <- as.data.frame(sov.r)
+
+sov.df[is.na(sov.df)] <- 0
+
+```
+
+# Determining number of factors to extract
+```{r}
+ev.sov <- eigen(cor(sov.df))
+ap.sov <- parallel(subject=nrow(sov.df),var=ncol(sov.df),
+               rep = 100, cent = .05)
+nS.sov <- nScree(x=ev.sov$values, apparallel = ap.sov$eigen$qevpea)
+plotnScree(nS.sov)
+```
+
+# Factor loadings
+```{r}
+fit.sov <- factanal(sov.df, 2, rotation = "varimax")
+print(fit.sov, digits = 2, cutoff = .3, sort = TRUE)
+```
+Factor 1 - Natives are sovereign
++ Native American tribes create and enforce their own rules, policies, and laws on reservations.
++ Native American tribes manage their own police forces.
++ Native American tribes determine the nature/structure of their own government without interference from U.S. or state governments.
++ Native American tribes are self-governing, autonomous nations within the United States.
+
+Factor 2
++ Native American tribes do not have control over their own judicial and legal systems.
++ Native American tribal police do not have jurisdiction over all people who reside on or are located on their reservation.
++ Native Americans tribes rely on the U.S. government to function as a nation.
+
+
+# Item analysis
+```{r}
+psych::alpha(sov.df, check.keys = TRUE)
+
+sov.comp <-
+  multicon::composite(sov.df,
+  rel = TRUE,
+  nomiss = 0)
+
+#view(sov.comp)
+```
+
+#Sovereign Statements
+```{r}
+sov1.raw <- data %>%
+  dplyr::select(
+    Sov_Rules,
+    Sov_Police,
+    Sov_Gov,
+    Sov_Auto
+    )
+
+sov1.key <- c(1, 1, 1, 1)
+
+sov1.r <-
+  reverse.code(sov1.key,
+               sov1.raw,
+               mini = 1,
+               maxi = 7)
+
+sov1.df <- as.data.frame(sov1.r)
+
+sov1.comp <- multicon::composite(sov1.df, rel = TRUE, nomiss = 0)
+```
+
+#Not Sovereign Statements
+```{r}
+sov2.raw <- data %>%
+  dplyr::select(
+    Sov_Legal,
+    Sov_Rely,
+    Sov_Jurisdiction)
+
+sov2.key <- c(-1, -1, -1)
+
+sov2.r <-
+  reverse.code(sov2.key,
+               sov2.raw,
+               mini = 1,
+               maxi = 7)
+
+sov2.df <- as.data.frame(sov2.r)
+
+sov2.comp <- multicon::composite(sov2.df, rel = TRUE, nomiss = 0)
+```
+
+# Racism Minimization
+```{r}
+# Higher values = Greater minimization of racism
+
+racemini.raw <- data %>%
+  dplyr::select(
+    RacismMini_1,
+    RacismMini_2,
+    RacismMini_3,
+    RacismMini_4,
+    RacismMini_5,
+    RacismMini_6,
+    RacismMini_7,
+    RacismMini_8,
+    RacismMini_9,
+    RacismMini_10
+    )
+
+racemini.key <- c(1, -1, 1, -1, -1,
+                  -1, -1, 1, 1, 1)
+
+racemini.r <- reverse.code(racemini.key,
+                           racemini.raw,
+                           mini = 1,
+                           maxi = 7)
+
+racemini.df <- as.data.frame(racemini.r)
+
+racemini.comp <-
+  multicon::composite(racemini.df, rel = TRUE, nomiss = 0)
+
+psych::alpha(racemini.df, check.keys = TRUE)
+
+```
+
+# Cultural Racism
+```{r}
+# Higher values = More cultural racism
+
+culturalracism.raw <- data %>%
+  dplyr::select(
+    CulturalRacism_1,
+    CulturalRacism_2,
+    CulturalRacism_3,
+    CulturalRacism_4,
+    CulturalRacism_5,
+    CulturalRacism_6,
+    CulturalRacism_7,
+    CulturalRacism_8,
+    CulturalRacism_9,
+    CulturalRacism_10,
+    CulturalRacism_11,
+    CulturalRacism_12,
+    CulturalRacism_13
+    )
+
+culrac.key <- c(1, 1, 1, 1, -1,
+                -1, 1, 1, 1, 1,
+                1, 1, 1)
+
+culturalracism.r <- reverse.code(culrac.key,
+                                 culturalracism.raw,
+                                 mini = 1,
+                                 maxi = 7)
+
+culturalracism.df <- as.data.frame(culturalracism.r)
+
+```
+
+# Item analysis
+```{r}
+psych::alpha(culturalracism.df, check.keys = TRUE)
+
+culturalracism.comp <-
+  multicon::composite(culturalracism.df,
+  rel = TRUE,
+  nomiss = 0)
+```
+
+# Native Dehumanization
+```{r}
+ntvdehum.raw <- data %>%
+  dplyr::select(NtvDehum_1,
+                NtvDehum_2,
+                NtvDehum_3,
+                NtvDehum_4,
+                NtvDehum_5,
+                NtvDehum_6,
+                NtvDehum_7,
+                NtvDehum_8)
+
+ntvdehum.key <- c(1, 1, 1, 1, -1,
+                1, 1, 1)
+
+ntvdehum.r <- reverse.code(ntvdehum.key,
+                                 ntvdehum.raw,
+                                 mini = 0,
+                                 maxi = 100)
+
+ntvdehum.df <- as.data.frame(ntvdehum.r)
+
+psych::alpha(ntvdehum.df, check.keys = TRUE)
+
+ntvdehum.comp <-
+  multicon::composite(ntvdehum.df,
+  rel = TRUE,
+  nomiss = 0)
+```
+
+# White Dehumanization
+```{r}
+
+whitedehum.raw <- data %>%
+  dplyr::select(
+    WhiteDehuman_1,
+    WhiteDehuman_2,
+    WhiteDehuman_3,
+    WhiteDehuman_4,
+    WhiteDehuman_5,
+    WhiteDehuman_6,
+    WhiteDehuman_7,
+    WhiteDehuman_8
+    )
+whitedehum.key <- c(1, 1, 1, 1, -1,
+                1, 1, 1)
+
+whitedehum.r <- reverse.code(whitedehum.key,
+                                 whitedehum.raw,
+                                 mini = 0,
+                                 maxi = 100)
+
+whitedehum.df <- as.data.frame(whitedehum.r)
+whitedehum.comp <-
+  multicon::composite(whitedehum.df,
+  rel = TRUE,
+  nomiss = 0)
+
+psych::alpha(whitedehum.df)
+```
+
+# Native Feelings thermometer
+```{r}
+describe(data$NtvFeelings_31)
+summary(data$NtvFeelings_31)
+
+```
+
+# White Feelings Thermometer
+```{r}
+describe(data$White_thermo_31)
+summary(data$White_thermo_31)
+
+```
+
+# ASI
+```{r}
+asi.raw <- data %>%
+  dplyr::select(
+    ASI_1,
+    ASI_2,
+    ASI_3,
+    ASI_4,
+    ASI_5,
+    ASI_6,
+    ASI_7,
+    ASI_8,
+    ASI_9,
+    ASI_10,
+    ASI_11,
+    ASI_12,
+    ASI_13,
+    ASI_14,
+    ASI_15,
+    ASI_16,
+    ASI_17,
+    ASI_18,
+    ASI_19,
+    ASI_20,
+    ASI_21,
+    ASI_22
+    )
+
+asi.key <- c(1, 1, 1, 1, 1,
+             -1, -1, 1, -1, 1,
+             1, 1, 1, 1, -1,
+             1, 1, 1, 1, -1,
+             1, -1)
+
+asi.r <- reverse.code(asi.key,
+                      asi.raw,
+                      mini = 1,
+                      maxi = 7)
+
+asi.df <- as.data.frame(asi.r)
+ 
+```
+
+# Determining the number of factors to extract
+```{r}
+ev.asi <- eigen(cor(asi.df))
+ap.asi <- parallel(subject=nrow(asi.df),var=ncol(asi.df),
+               rep = 100, cent = .05)
+nS.asi <- nScree(x=ev.asi$values, apparallel = ap.asi$eigen$qevpea)
+plotnScree(nS.asi)
+```
+
+# Factor loadings
+```{r}
+fit.asi <- factanal(asi.df, 3, rotation = "varimax")
+print(fit.asi, digits = 2, cutoff = .3, sort = TRUE)
+
+```
+
+# ASI Descriptives
+```{r}
+# Item analysis
+
+psych::alpha(asi.df)
+
+# Overall ASI score
+asi.comp <- multicon::composite(asi.df, rel=TRUE, nomiss = 0)
+
+# ASI subscale - Hostile Sexism
+
+host.raw <- data %>%
+  dplyr::select(
+    ASI_1,
+    ASI_2,
+    ASI_3,
+    ASI_4,
+    ASI_5,
+    ASI_6,
+    ASI_7,
+    ASI_8,
+    ASI_9,
+    ASI_10,
+    ASI_11
+    )
+
+host.key <- c(1, 1, 1, 1, 1,
+             -1, -1, 1, -1, 1, 1)
+
+host.r <- reverse.code(host.key,
+                       host.raw,
+                       mini= 1,
+                       maxi = 7)
+
+host.df <- as.data.frame(host.r)
+
+host.comp <- multicon::composite(host.df, rel = TRUE, nomiss = 0)
+
+# ASI subscale - Benevolent Sexism
+
+ben.raw <- data %>%
+  dplyr::select(
+    ASI_12,
+    ASI_13,
+    ASI_14,
+    ASI_15,
+    ASI_16,
+    ASI_17,
+    ASI_18,
+    ASI_19,
+    ASI_20,
+    ASI_21,
+    ASI_22
+    )
+
+ben.key <- c(1, 1, 1, -1,
+             1, 1, 1, 1, -1,
+             1, -1)
+
+ben.r <- reverse.code(ben.key,
+                      ben.raw,
+                      mini=1,
+                      maxi=7)
+
+ben.df <- as.data.frame(ben.r)
+
+ben.comp <- multicon::composite(ben.df, rel = TRUE, nomiss = 0)
+
+```
+
+# Demographics
+
+#Race
+```{r}
+table(data$Race)
+
+head(data$Race)
+```
+
+#Gender
+```{r}
+
+table(data$Gender)
+#Gender: Male- 166; Females-114; N/A-20
+#***No entries: Transgender man, Transgender woman, Non-binary, Genderqueer
+
+```
+
+# SES - highest level of education
+
+```{r}
+table(data$SES)
+
+# HS Diploma = 73
+# AA = 45
+# BA/BS = 132
+# MA/MS = 26
+# Doctorate = 5
+```
+
+# Born in US
+
+```{r}
+table(data$BorninUS)
+#Born in the US: Yes- 269; No-12; N/A- 19
+```
+
+# Citizen
+
+```{r}
+table(data$Citizen)
+#No-3 Yes-9; N/A- 288
+```
+
+#Age
+```{r}
+table(data$Age.r)
+summary(data$Age.r)
+#Age: Mean= 35.98;  SD=16;  Min=19 Max= 69
+
+stem(data$Age.r)
+
+AgeGroups <- cut(data$Age.r, breaks=c(18, 24, 34, 44, Inf), labels=c("18-24", "25-34", "35-44", "45+"))
+
+```
+
+#Liberal/Conservative
+```{r}
+table(data$LibCon)
+summary(data$LibCon)
+
+#Liberal/Conservative: Extremely Conservative:20; Conservative:26; Somewhat Conservative:21; Moderate:69; Somewhat Liberal:42; Liberal:51; Extremely Liberal: 49; NA: 22
+```
+#News Source
+```{r}
+(primnews <- (table(data$NewsSource)))
+plot(primnews)
+
+#Primary News Source: National TV: 76; Local TV: 20; Social Media: 97; Radio/Podcast: 13; Online Blog: 23; National Newspaper: 33; Local Newspaper: 7; Published Research Report: 4; Word of Mouth: 6; Unsure: 2; N/A: 19
+```
+
+# Correlations
+```{r}
+#Summary of Variables
+SumVariables.df<- data.frame(SocialMovements.comp, NativeSM.comp, NonNativeSM.comp, POCSM.comp, NonPOCSM.comp, LiberalSM.comp, ConservSM.comp, EnvirSM.comp, WomenSM.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.com, in.com, sov.comp, racemini.comp, culturalracism.comp, ntvdehum.comp, whitedehum.comp, asi.comp, host.comp, ben.comp, data$Age.r, data$SES, data$LibCon)
+
+ggcorr(SumVariables.df,
+       label = TRUE)
+
+corr.test(SumVariables.df, y = NULL, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=FALSE,minlength=5)
+
+```
+#Attitudes and Beliefs Correlations
+```{r}
+#Attitudes and Beliefs/Social Movements
+AB_and_SM <- corr.test(att.comp, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Native Social Movements
+AB_and_NatSM <- corr.test(att.comp, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Non-Native Social Movements
+AB_and_NonNatSM <- corr.test(att.comp, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/POC Social Movements
+AB_and_POCSM <- corr.test(att.comp, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/NonPOC Social Movements
+AB_and_NonPOCSM <- corr.test(att.comp, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Liberal Social Movements
+AB_and_LiberalSM <- corr.test(att.comp, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Conservative Social Movements
+AB_and_ConservSM <- corr.test(att.comp, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Environmental Social Movements
+AB_and_EnvirSM <- corr.test(att.comp, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Women Centered Social Movements
+AB_and_WomenSM <- corr.test(att.comp, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Support
+AB_and_Support <- corr.test(att.comp, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Invisibility
+AB_and_Invisibility <- corr.test(att.comp, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Sovereignty
+AB_and_Sovereignty <- corr.test(att.comp, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Race Minimization
+AB_and_RaceMini <- corr.test(att.comp, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Cultural Racism
+AB_and_CRacism <- corr.test(att.comp, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/Native Dehumanization
+AB_and_NtvDehum <- corr.test(att.comp, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ White Dehumanization
+AB_and_WhiteDehum <- corr.test(att.comp, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ Ambivalent Sexism Inventory
+AB_and_ASI <- corr.test(att.comp, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ Hostile Sexism
+AB_and_HS <- corr.test(att.comp, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ Benevolent Sexism
+AB_and_BS <- corr.test(att.comp, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ Age
+AB_and_Age <- corr.test(att.comp, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ SES
+AB_and_SES <- corr.test(att.comp, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Attitudes and Beliefs/ Liberalism-Conservatism
+AB_and_LibCon <- corr.test(att.comp, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+```
+#Victim Blaming Correlations
+```{r}
+#Victim Blaming/Social Movements
+VB_and_SM <- corr.test(vicblame.comp, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Native Social Movements
+VB_and_NatSM <- corr.test(vicblame.comp, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Non-Native Social Movements
+VB_and_NonNatSM <- corr.test(vicblame.comp, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/POC Social Movements
+VB_and_POCSM <- corr.test(vicblame.comp, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/NonPOC Social Movements
+VB_and_NonPOCSM <- corr.test(vicblame.comp, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Liberal Social Movements
+VB_and_LiberalSM <- corr.test(vicblame.comp, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Conservative Social Movements
+VB_and_ConservSM <- corr.test(vicblame.comp, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Environmental Social Movements
+VB_and_EnvirSM <- corr.test(vicblame.comp, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Women Centered Social Movements
+VB_and_WomenSM <- corr.test(vicblame.comp, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Support
+VB_and_Support <- corr.test(vicblame.comp, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Invisibility
+VB_and_Invisibility <- corr.test(vicblame.comp, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Sovereignty
+VB_and_Sovereignty <- corr.test(vicblame.comp, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Race Minimization
+VB_and_RaceMini <- corr.test(vicblame.comp, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Cultural Racism
+VB_and_CRacism <- corr.test(vicblame.comp, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/Native Dehumanization
+VB_and_NtvDehum <- corr.test(vicblame.comp, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ White Dehumanization
+VB_and_WhiteDehum <- corr.test(vicblame.comp, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ Ambivalent Sexism Inventory
+VB_and_ASI <- corr.test(vicblame.comp, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ Hostile Sexism
+VB_and_HS <- corr.test(vicblame.comp, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ Benevolent Sexism
+VB_and_BS <- corr.test(vicblame.comp, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ Age
+VB_and_Age <- corr.test(vicblame.comp, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ SES
+VB_and_SES <- corr.test(vicblame.comp, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Victim Blaming/ Liberalism-Conservatism
+VB_and_LibCon <- corr.test(vicblame.comp, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+#External Factors Correlations
+```{r}
+#External Factors/Social Movements
+EF_and_SM <- corr.test(externfactors.comp, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Native Social Movements
+EF_and_NatSM <- corr.test(externfactors.comp, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Non-Native Social Movements
+EF_and_NonNatSM <- corr.test(externfactors.comp, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/POC Social Movements
+EF_and_POCSM <- corr.test(externfactors.comp, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/NonPOC Social Movements
+EF_and_NonPOCSM <- corr.test(externfactors.comp, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Liberal Social Movements
+EF_and_LiberalSM <- corr.test(externfactors.comp, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Conservative Social Movements
+EF_and_ConservSM <- corr.test(externfactors.comp, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Environmental Social Movements
+EF_and_EnvirSM <- corr.test(externfactors.comp, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Women Centered Social Movements
+EF_and_WomenSM <- corr.test(externfactors.comp, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Support
+EF_and_Support <- corr.test(externfactors.comp, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Invisibility
+EF_and_Invisibility <- corr.test(externfactors.comp, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Sovereignty
+EF_and_Sovereignty <- corr.test(externfactors.comp, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Race Minimization
+EF_and_RaceMini <- corr.test(externfactors.comp, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Cultural Racism
+EF_and_CRacism <- corr.test(externfactors.comp, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/Native Dehumanization
+EF_and_NtvDehum <- corr.test(externfactors.comp, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ White Dehumanization
+EF_and_WhiteDehum <- corr.test(externfactors.comp, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ Ambivalent Sexism Inventory
+EF_and_ASI <- corr.test(externfactors.comp, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ Hostile Sexism
+EF_and_HS <- corr.test(externfactors.comp, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ Benevolent Sexism
+EF_and_BS <- corr.test(externfactors.comp, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ Age
+EF_and_Age <- corr.test(externfactors.comp, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ SES
+EF_and_SES <- corr.test(externfactors.comp, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#External Factors/ Liberalism-Conservatism
+EF_and_LibCon <- corr.test(externfactors.comp, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+#Community Blame Corelations
+```{r}
+#Community Blame/Social Movements
+CB_and_SM <- corr.test(commblame.comp, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Native Social Movements
+CB_and_NatSM <- corr.test(commblame.comp, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Non-Native Social Movements
+CB_and_NonNatSM <- corr.test(commblame.comp, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/POC Social Movements
+CB_and_POCSM <- corr.test(commblame.comp, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/NonPOC Social Movements
+CB_and_NonPOCSM <- corr.test(commblame.comp, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Liberal Social Movements
+CB_and_LiberalSM <- corr.test(commblame.comp, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Conservative Social Movements
+CB_and_ConservSM <- corr.test(commblame.comp, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Environmental Social Movements
+CB_and_EnvirSM <- corr.test(commblame.comp, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Women Centered Social Movements
+CB_and_WomenSM <- corr.test(commblame.comp, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Support
+CB_and_Support <- corr.test(commblame.comp, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Invisibility
+CB_and_Invisibility <- corr.test(commblame.comp, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Sovereignty
+CB_and_Sovereignty <- corr.test(commblame.comp, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Race Minimization
+CB_and_RaceMini <- corr.test(commblame.comp, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Cultural Racism
+CB_and_CRacism <- corr.test(commblame.comp, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/Native Dehumanization
+CB_and_NtvDehum <- corr.test(commblame.comp, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ White Dehumanization
+CB_and_WhiteDehum <- corr.test(commblame.comp, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ Ambivalent Sexism Inventory
+CB_and_ASI <- corr.test(commblame.comp, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ Hostile Sexism
+CB_and_HS <- corr.test(commblame.comp, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ Benevolent Sexism
+CB_and_BS <- corr.test(commblame.comp, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ Age
+CB_and_Age <- corr.test(commblame.comp, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ SES
+CB_and_SES <- corr.test(commblame.comp, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Community Blame/ Liberalism-Conservatism
+CB_and_LibCon <- corr.test(commblame.comp, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+
+#Native Social Movements Correlations
+```{r}
+#Native SM/Social Movements
+NatSM_and_SM <- corr.test(NativeSM.comp, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Native SM/Non-Native Social Movements
+NatSM_and_NonNatSM <- corr.test(NativeSM.comp, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/POC Social Movements
+NatSM_and_POCSM <- corr.test(NativeSM.comp, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/NonPOC Social Movements
+NatSM_and_NonPOCSM <- corr.test(NativeSM.comp, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Liberal Social Movements
+NatSM_and_LiberalSM <- corr.test(NativeSM.comp, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Conservative Social Movements
+NatSM_and_ConservSM <- corr.test(NativeSM.comp, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Environmental Social Movements
+NatSM_and_EnvirSM <- corr.test(NativeSM.comp, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Women Centered Social Movements
+NatSM_and_WomenSM <- corr.test(NativeSM.comp, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Attitudes and Beliefs
+NatSM_and_AB <- corr.test(NativeSM.comp, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Victim Blaming
+NatSM_and_VB <- corr.test(NativeSM.comp, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/External Factors
+NatSM_and_EF <- corr.test(NativeSM.comp, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Community Blame
+NatSM_and_CB <- corr.test(NativeSM.comp, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Support
+NatSM_and_Support <- corr.test(NativeSM.comp, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Invisibility
+NatSM_and_Invisibility <- corr.test(NativeSM.comp, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Sovereignty
+NatSM_and_Sovereignty <- corr.test(NativeSM.comp, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Race Minimization
+NatSM_and_RaceMini <- corr.test(NativeSM.comp, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Cultural Racism
+NatSM_and_CRacism <- corr.test(NativeSM.comp, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/Native Dehumanization
+NatSM_and_NtvDehum <- corr.test(NativeSM.comp, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ White Dehumanization
+NatSM_and_WhiteDehum <- corr.test(NativeSM.comp, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ Ambivalent Sexism Inventory
+NatSM_and_ASI <- corr.test(NativeSM.comp, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ Hostile Sexism
+NatSM_and_HS <- corr.test(NativeSM.comp, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ Benevolent Sexism
+NatSM_and_BS <- corr.test(NativeSM.comp, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ Age
+NatSM_and_Age <- corr.test(NativeSM.comp, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ SES
+NatSM_and_SES <- corr.test(NativeSM.comp, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#NativeSM/ Liberalism-Conservatism
+NatSM_and_LibCon <- corr.test(NativeSM.comp, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+#Knowledge of MMIWG Correlations
+```{r}
+#MMIWG/Social Movements
+MMIWG_and_SM <- corr.test(data$MMIWG, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Native Social Movements
+MMIWG_and_NatSM <- corr.test(data$MMIWG, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Non-Native Social Movements
+MMIWG_and_NonNatSM <- corr.test(data$MMIWG, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/POC Social Movements
+MMIWG_and_POCSM <- corr.test(data$MMIWG, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/NonPOC Social Movements
+MMIWG_and_NonPOCSM <- corr.test(data$MMIWG, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Liberal Social Movements
+MMIWG_and_LiberalSM <- corr.test(data$MMIWG, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Conservative Social Movements
+MMIWG_and_ConservSM <- corr.test(data$MMIWG, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Environmental Social Movements
+MMIWG_and_EnvirSM <- corr.test(data$MMIWG, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Women Centered Social Movements
+MMIWG_and_WomenSM <- corr.test(data$MMIWG, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Attitudes and Beliefs
+MMIWG_and_AB <- corr.test(data$MMIWG, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Victim Blaming
+MMIWG_and_VB <- corr.test(data$MMIWG, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/External Factors
+MMIWG_and_EF <- corr.test(data$MMIWG, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Community Blame
+MMIWG_and_CB <- corr.test(data$MMIWG, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Support
+MMIWG_and_Support <- corr.test(data$MMIWG, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Invisibility
+MMIWG_and_Invisibility <- corr.test(data$MMIWG, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Sovereignty
+MMIWG_and_Sovereignty <- corr.test(data$MMIWG, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Race Minimization
+MMIWG_and_RaceMini <- corr.test(data$MMIWG, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Cultural Racism
+MMIWG_and_CRacism <- corr.test(data$MMIWG, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/Native Dehumanization
+MMIWG_and_NtvDehum <- corr.test(data$MMIWG, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ White Dehumanization
+MMIWG_and_WhiteDehum <- corr.test(data$MMIWG, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ Ambivalent Sexism Inventory
+MMIWG_and_ASI <- corr.test(data$MMIWG, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ Hostile Sexism
+MMIWG_and_HS <- corr.test(data$MMIWG, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ Benevolent Sexism
+MMIWG_and_BS <- corr.test(data$MMIWG, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ Age
+MMIWG_and_Age <- corr.test(data$MMIWG, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ SES
+MMIWG_and_SES <- corr.test(data$MMIWG, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#MMIWG/ Liberalism-Conservatism
+MMIWG_and_LibCon <- corr.test(data$MMIWG, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+#Invisibility Correlations
+```{r}
+#Invisibility/Social Movements
+Inv_and_SM <- corr.test(in.com, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Native Social Movements
+Inv_and_NatSM <- corr.test(in.com, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Non-Native Social Movements
+Inv_and_NonNatSM <- corr.test(in.com, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/POC Social Movements
+Inv_and_POCSM <- corr.test(in.com, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/NonPOC Social Movements
+Inv_and_NonPOCSM <- corr.test(in.com, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Liberal Social Movements
+Inv_and_LiberalSM <- corr.test(in.com, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Conservative Social Movements
+Inv_and_ConservSM <- corr.test(in.com, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Environmental Social Movements
+Inv_and_EnvirSM <- corr.test(in.com, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Women Centered Social Movements
+Inv_and_WomenSM <- corr.test(in.com, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Attitudes and Beliefs
+Inv_and_AB <- corr.test(in.com, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Victim Blaming
+Inv_and_VB <- corr.test(in.com, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/External Factors
+Inv_and_EF <- corr.test(in.com, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Community Blame
+Inv_and_CB <- corr.test(in.com, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Support
+Inv_and_Support <- corr.test(in.com, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Sovereignty
+Inv_and_Sovereignty <- corr.test(in.com, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Race Minimization
+Inv_and_RaceMini <- corr.test(in.com, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Cultural Racism
+Inv_and_CRacism <- corr.test(in.com, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/Native Dehumanization
+Inv_and_NtvDehum <- corr.test(in.com, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ White Dehumanization
+Inv_and_WhiteDehum <- corr.test(in.com, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ Ambivalent Sexism Inventory
+Inv_and_ASI <- corr.test(in.com, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ Hostile Sexism
+Inv_and_HS <- corr.test(in.com, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ Benevolent Sexism
+Inv_and_BS <- corr.test(in.com, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ Age
+Inv_and_Age <- corr.test(in.com, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ SES
+Inv_and_SES <- corr.test(in.com, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility/ Liberalism-Conservatism
+Inv_and_LibCon <- corr.test(in.com, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+
+#Violence Against Native Women Correlations
+```{r}
+#Invisibility of Violence Against NA Women/Social Movements
+ViolNA_and_SM <- corr.test(data$IN_Violence, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Native Social Movements
+ViolNA_and_NatSM <- corr.test(data$IN_Violence, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Non-Native Social Movements
+ViolNA_and_NonNatSM <- corr.test(data$IN_Violence, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/POC Social Movements
+ViolNA_and_POCSM <- corr.test(data$IN_Violence, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/NonPOC Social Movements
+ViolNA_and_NonPOCSM <- corr.test(data$IN_Violence, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Liberal Social Movements
+ViolNA_and_LiberalSM <- corr.test(data$IN_Violence, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Conservative Social Movements
+ViolNA_and_ConservSM <- corr.test(data$IN_Violence, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Environmental Social Movements
+ViolNA_and_EnvirSM <- corr.test(data$IN_Violence, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Women Centered Social Movements
+ViolNA_and_WomenSM <- corr.test(data$IN_Violence, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Attitudes and Beliefs
+ViolNA_and_AB <- corr.test(data$IN_Violence, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Victim Blaming
+ViolNA_and_VB <- corr.test(data$IN_Violence, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/External Factors
+ViolNA_and_EF <- corr.test(data$IN_Violence, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Community Blame
+ViolNA_and_CB <- corr.test(data$IN_Violence, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Support
+ViolNA_and_Support <- corr.test(data$IN_Violence, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Invisibility
+ViolNA_and_Invisibility <- corr.test(data$IN_Violence, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Sovereignty
+ViolNA_and_Sovereignty <- corr.test(data$IN_Violence, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Race Minimization
+ViolNA_and_RaceMini <- corr.test(data$IN_Violence, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Cultural Racism
+ViolNA_and_CRacism <- corr.test(data$IN_Violence, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/Native Dehumanization
+ViolNA_and_NtvDehum <- corr.test(data$IN_Violence, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ White Dehumanization
+ViolNA_and_WhiteDehum <- corr.test(data$IN_Violence, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ Ambivalent Sexism Inventory
+ViolNA_and_ASI <- corr.test(data$IN_Violence, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ Hostile Sexism
+ViolNA_and_HS <- corr.test(data$IN_Violence, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ Benevolent Sexism
+ViolNA_and_BS <- corr.test(data$IN_Violence, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ Age
+ViolNA_and_Age <- corr.test(data$IN_Violence, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ SES
+ViolNA_and_SES <- corr.test(data$IN_Violence, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Invisibility of Violence Against NA Women/ Liberalism-Conservatism
+ViolNA_and_LibCon <- corr.test(data$IN_Violence, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+
+#Liberalism/Conservatism Correlations
+```{r}
+#Liberalism-Conservatism/Social Movements
+LibCon_and_SM <- corr.test(data$LibCon, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Native Social Movements
+LibCon_and_NatSM <- corr.test(data$LibCon, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Non-Native Social Movements
+LibCon_and_NonNatSM <- corr.test(data$LibCon, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/POC Social Movements
+LibCon_and_POCSM <- corr.test(data$LibCon, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/NonPOC Social Movements
+LibCon_and_NonPOCSM <- corr.test(data$LibCon, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Liberal Social Movements
+LibCon_and_LiberalSM <- corr.test(data$LibCon, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Conservative Social Movements
+LibCon_and_ConservSM <- corr.test(data$LibCon, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Environmental Social Movements
+LibCon_and_EnvirSM <- corr.test(data$LibCon, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Women Centered Social Movements
+LibCon_and_WomenSM <- corr.test(data$LibCon, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Attitudes and Beliefs
+LibCon_and_AB <- corr.test(data$LibCon, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Victim Blaming
+LibCon_and_VB <- corr.test(data$LibCon, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/External Factors
+LibCon_and_EF <- corr.test(data$LibCon, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Community Blame
+LibCon_and_CB <- corr.test(data$LibCon, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Support
+LibCon_and_Support <- corr.test(data$LibCon, y = sup.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Invisibility
+LibCon_and_Invisibility <- corr.test(data$LibCon, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Sovereignty
+LibCon_and_Sovereignty <- corr.test(data$LibCon, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Race Minimization
+LibCon_and_RaceMini <- corr.test(data$LibCon, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Cultural Racism
+LibCon_and_CRacism <- corr.test(data$LibCon, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/Native Dehumanization
+LibCon_and_NtvDehum <- corr.test(data$LibCon, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ White Dehumanization
+LibCon_and_WhiteDehum <- corr.test(data$LibCon, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ Ambivalent Sexism Inventory
+LibCon_and_ASI <- corr.test(data$LibCon, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ Hostile Sexism
+LibCon_and_HS <- corr.test(data$LibCon, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ Benevolent Sexism
+LibCon_and_BS <- corr.test(data$LibCon, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ Age
+LibCon_and_Age <- corr.test(data$LibCon, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Liberalism-Conservatism/ SES
+LibCon_and_SES <- corr.test(data$LibCon, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+```
+
+#Support for Actions to end MMIWG Correlations
+```{r}
+#Support/Social Movements
+Support_and_SM <- corr.test(sup.com, y = SocialMovements.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Native Social Movements
+Support_and_NatSM <- corr.test(sup.com, y = NativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Non-Native Social Movements
+Support_and_NonNatSM <- corr.test(sup.com, y = NonNativeSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/POC Social Movements
+Support_and_POCSM <- corr.test(sup.com, y = POCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/NonPOC Social Movements
+Support_and_NonPOCSM <- corr.test(sup.com, y = NonPOCSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Liberal Social Movements
+Support_and_LiberalSM <- corr.test(sup.com, y = LiberalSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Conservative Social Movements
+Support_and_ConservSM <- corr.test(sup.com, y = ConservSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Environmental Social Movements
+Support_and_EnvirSM <- corr.test(sup.com, y = EnvirSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Women Centered Social Movements
+Support_and_WomenSM <- corr.test(sup.com, y = WomenSM.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Attitudes and Beliefs
+Support_and_AB <- corr.test(sup.com, y = att.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Victim Blaming
+Support_and_VB <- corr.test(sup.com, y = vicblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/External Factors
+Support_and_EF <- corr.test(sup.com, y = externfactors.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Community Blame
+Support_and_CB <- corr.test(sup.com, y = commblame.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Invisibility
+Support_and_Invisibility <- corr.test(sup.com, y = in.com, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Sovereignty
+Support_and_Sovereignty <- corr.test(sup.com, y = sov.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Race Minimization
+Support_and_RaceMini <- corr.test(sup.com, y = racemini.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Cultural Racism
+Support_and_CRacism <- corr.test(sup.com, y = culturalracism.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/Native Dehumanization
+Support_and_NtvDehum <- corr.test(sup.com, y = ntvdehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ White Dehumanization
+Support_and_WhiteDehum <- corr.test(sup.com, y = whitedehum.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ Ambivalent Sexism Inventory
+Support_and_ASI <- corr.test(sup.com, y = asi.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ Hostile Sexism
+Support_and_HS <- corr.test(sup.com, y = host.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ Benevolent Sexism
+Support_and_BS <- corr.test(sup.com, y = ben.comp, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ Age
+Support_and_Age <- corr.test(sup.com, y = data$Age.r, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ SES
+Support_and_SES <- corr.test(sup.com, y = data$SES, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+
+#Support/ Liberalism-Conservatism
+Support_and_LibCon <- corr.test(sup.com, y = data$LibCon, use = "pairwise",method="pearson",adjust="holm", 
+alpha=.05,ci=TRUE,minlength=5)
+```
+
+#Mutate Data
+```{r}
+data <- data %>% 
+  mutate(Gender = factor(Gender, 
+                        labels = c("Male", "Female")),
+         BorninUS = factor(BorninUS,
+                        labels = c("No", "Yes")),
+         SES = factor(SES,
+                      labels = c("High School", "Associates/Technical Degree", "BA/BS", "MA/MS", "Doctorate")),
+         Citizen = factor(Citizen,
+                          labels = c("No", "Yes")),
+         LibCon = factor(LibCon,
+                         labels = c("Extremely Conservative", "Conservative", "Somewhat Conservative", "Moderate", "Somewhat Liberal", "Liberal", "Extremely Liberal")),
+         NewsSource = factor(NewsSource,
+                             labels = c("NatTV", "LocalTV", "SocialMedia", "Radio/Podcast", "OnlineBlog", "NatNewspaper", "LocalNewspaper", "PublishedResearch", "WordofMouth", "Unsure")))
+```
+

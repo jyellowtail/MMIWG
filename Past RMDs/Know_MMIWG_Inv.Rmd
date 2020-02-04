@@ -1,0 +1,136 @@
+---
+title: "Knowledge of MMIWG"
+author: "Jamie Yellowtail"
+date: "9/17/2019"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+## Necessary Packages
+#{r load packages}
+library(psych) # For reverse coding variables, reading data files and item analysis
+library(multicon) # For creating composites
+library(tidyverse)
+#install.packages("haven")
+library(haven)
+#install.packages("labelled")
+library(labelled)
+#install.packages("nFactors")
+library(nFactors) # Determines how many factors to extract
+library(dplyr) #clean up data
+#install.packages("corrplot")
+library(corrplot) # For correlation matrix
+library(GGally)
+#install.packages("Rmisc") #Multiplot
+library(Rmisc)
+
+```
+#Functions to Center
+```{r}
+
+center<-function(MOD)
+{
+  centered<-MOD-mean(MOD,na.rm=TRUE)
+  return(centered)
+}
+
+low<-function(MOD)
+{
+  low<-(MOD-mean(MOD,na.rm=TRUE))+sd(MOD, na.rm=TRUE)
+  return(low)
+}
+
+high<-function(MOD)
+{
+  high<-(MOD-mean(MOD, na.rm=TRUE))-sd(MOD, na.rm=TRUE)
+  return(high)
+}
+
+gmc <- function(MOD, grp)
+  {
+  gmcentered<- (MOD-tapply(MOD,grp,mean,na.rm=TRUE)[grp])
+  return(gmcentered)
+
+}
+
+```
+#Import Data
+```{r}
+data <- read.csv("MMIWG.csv")
+
+data <- data %>% 
+  dplyr::rename(Mauna_Kea = Movements_16)
+
+#view(data)
+```
+#Knowledge of MMIWG predicted by Invisibility
+```{r}
+WhiteRespond <- filter(data, Race==3)
+
+table(WhiteRespond$MMIWG)
+table(WhiteRespond$MeToo)
+
+MMIWG_Plot <- ggplot(WhiteRespond, aes(x=MMIWG)) +
+  geom_histogram(bins=5)+
+  ggtitle("Knowledge of MMIWG")
+
+MeToo_Plot <- ggplot(WhiteRespond, aes(x=MeToo)) +
+  geom_histogram(bins=5)+
+  ggtitle("Knowledge of MeToo")
+
+multiplot(MMIWG_Plot, MeToo_Plot, cols=2)
+
+WhiteRespond.in <- WhiteRespond %>%
+  dplyr::rename(NtvInvisibility_7 = Invisibility1_13,
+         NtvInvisibility_8 = Invisibility1_14,
+         NtvInvisibility_9 = Invisibility1_15,
+         NtvInvisibility_10 = Invisibility1_16,
+         NtvInvisibility_11 = Invisibility1_17,
+         NtvInvisibility_12 = Invisibility1_18)
+
+WhiteRespond.in.raw <- WhiteRespond.in %>%
+  dplyr::select(
+    NtvInvisibility_1,
+    NtvInvisibility_2,
+    NtvInvisibility_3,
+    NtvInvisibility_4,
+    NtvInvisibility_5,
+    NtvInvisibility_6,
+    NtvInvisibility_7,
+    NtvInvisibility_8,
+    NtvInvisibility_9,
+    NtvInvisibility_10,
+    NtvInvisibility_11,
+    NtvInvisibility_12,
+    IN_Violence
+    )
+
+WhiteRespond.in.key <- c(1, -1, 1, 1,
+           1, 1, 1, -1,
+           1, 1, 1, 1, 1)
+
+WhiteRespond.in.r <-
+  reverse.code(WhiteRespond.in.key,
+               WhiteRespond.in.raw,
+               mini = 1,
+               maxi = 7)
+
+WhiteRespond.in.df <- as.data.frame(WhiteRespond.in.r)
+
+Invisibility <-
+  multicon::composite(WhiteRespond.in.df,
+  rel = TRUE,
+  nomiss = 0)
+
+KnowledgeofMMIWG <- lm(MMIWG ~ Invisibility, data = WhiteRespond)
+
+summary(KnowledgeofMMIWG)
+
+ggplot(data = WhiteRespond, aes(x = Invisibility, y = MMIWG)) + 
+  geom_point(stat = "identity", size = 2) +
+  geom_smooth(method = lm, se = FALSE) + 
+  labs(title = "The Relationship Between Invisibility and Knowledge of MMIWG", 
+       x = "Invisibility", y = "Knowledge of MMIWG")
+
+```

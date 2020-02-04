@@ -1,0 +1,468 @@
+---
+title: "MMIWG_1"
+author: "Jamie Yellowtail"
+date: "8/13/2019"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(rio)
+library(tidyverse)
+library(broom)
+library(lmSupport)
+library(olsrr)
+library(psych)
+library(readr)
+library(dplyr)
+library(ggplot2)
+install.packages("GGally")
+library(GGally)
+options(scipen = 999)
+
+#install.packages("devtools")
+#devtools::install_github("ropensci/qualtRics")
+
+library(qualtRics)
+MMIWG1 <- readSurvey("MMIWG_1.csv")
+
+View(MMIWG1)
+#str(MMIWG1)
+
+
+
+MMIWG1 <- MMIWG1 %>% 
+  mutate(Gender = factor(Gender, 
+                        labels = c("Male", "Female")),
+         BorninUS = factor(BorninUS,
+                        labels = c("No", "Yes")),
+         SES = factor(SES,
+                      labels = c("High School", "Associates/Technical Degree", "BA/BS", "MA/MS", "Doctorate")),
+         Citizen = factor(Citizen,
+                          labels = c("No", "Yes")),
+         LibCon = factor(LibCon,
+                         labels = c("Extremely Conservative", "Conservative", "Somewhat Conservative", "Moderate", "Somewhat Liberal", "Liberal", "Extremely Liberal")),
+         NewsSource = factor(NewsSource,
+                             labels = c("NatTV", "LocalTV", "SocialMedia", "Radio/Podcast", "OnlineBlog", "NatNewspaper", "LocalNewspaper", "PublishedResearch", "WordofMouth", "Unsure")))
+
+MMIWG1 <- MMIWG1 %>% 
+  rename(Mauna_Kea = Movements_16)
+
+```
+
+#Knowledge of Social Movements
+```{r}
+#MeToo
+summary(MMIWG1$MeToo)
+describe(MMIWG1$MeToo)
+
+#March for our Lives
+summary(MMIWG1$March4lives)
+describe(MMIWG1$March4lives)
+
+#Black Lives Matter
+summary(MMIWG1$BLM)
+describe(MMIWG1$BLM)
+
+#All Lives Matter
+summary(MMIWG1$AllLives)
+describe(MMIWG1$AllLives)
+
+#NoDAPL
+summary(MMIWG1$NODAPL)
+describe(MMIWG1$NODAPL)
+
+#Native Lives Matter
+summary(MMIWG1$NativeLives)
+describe(MMIWG1$NativeLives)
+
+#Zero Hour
+summary(MMIWG1$ZeroHour)
+describe(MMIWG1$ZeroHour)
+
+#Blue Lives Matter
+summary(MMIWG1$BlueLives)
+describe(MMIWG1$BlueLives)
+
+#Men's Rights
+summary(MMIWG1$MenRights)
+describe(MMIWG1$MenRights)
+
+#White Nationalist
+summary(MMIWG1$WhiteNationa)
+describe(MMIWG1$WhiteNationa)
+
+#Straight Pride
+summary(MMIWG1$StraightPride)
+describe(MMIWG1$StraightPride)
+
+#LGBTQ+ Pride
+summary(MMIWG1$LGBTQ)
+describe(MMIWG1$LGBTQ)
+
+#Right to Life
+summary(MMIWG1$Right2Life)
+describe(MMIWG1$Right2Life)
+
+#Missing and Murdered Indigenous Women and Girls
+summary(MMIWG1$MMIWG)
+describe(MMIWG1$MMIWG)
+
+#TimesUp
+summary(MMIWG1$Timesup)
+describe(MMIWG1$Timesup)
+
+#MaunaKea     
+summary(MMIWG1$Mauna_Kea)
+describe(MMIWG1$Mauna_Kea)
+
+#Native Social Movements
+MMIWG1<-mutate(MMIWG1, NatSM = rowMeans(MMIWG1[,c("MMIWG", "NativeLives", "NODAPL","Mauna_Kea")]))
+summary(MMIWG1$NatSM)
+describe(MMIWG1$NatSM)
+
+#Non-Native Social Movements
+MMIWG1<-mutate(MMIWG1, NonNatSM = rowMeans(MMIWG1[,c("MeToo", "March4lives", "BLM","AllLives", "ZeroHour", "BlueLives", "MenRights", "WhiteNationa", "StraightPride", "LGBTQ", "Right2Life", "Timesup")]))
+summary(MMIWG1$NonNatSM)
+describe(MMIWG1$NonNatSM)
+
+
+```
+#Attitudes and Beliefs About Contributing Factors to MMIWG
+```{r}
+# higher signifies more negative attitudes
+MMIWG1 <- MMIWG1 %>% 
+  rename(`AB_NonNative_pers` = `AB_NonNative pers`)
+
+att <- MMIWG1 %>%
+  dplyr::select(
+    AB_Activists,
+    AB_SexWork,
+    AB_NonNative_pers,
+    AB_Rez,
+    AB_Citizens,
+    AB_Runaways,
+    AB_Drug,
+    AB_MaleWorker,
+    AB_Criminal,
+    AB_TwoParent,
+    AB_TribalPolice,
+    AB_Poverty,
+    AB_NativeComm,
+    AB_Society,
+    AB_Abusive,
+    AB_Laws
+    )
+
+att.key = c(1, 1, -1, 1, -1, 1, 1, -1,
+               1, 1, -1, 1, 1, 1, 1, -1) #Reverse Scoring
+
+att.r <-
+  reverse.code(att.key,
+               att,
+               mini = 1,
+               maxi = 7)
+
+att.df <- as.data.frame(att.r)
+
+att.df[is.na(att.df)] <- 0
+
+psych::alpha(att.df, check.keys = TRUE)
+
+att.comp <- multicon::composite(att.df, rel=TRUE, nomiss = 0)
+
+MMIWG1<-mutate(MMIWG1, Att_and_Belief_Score = rowMeans(MMIWG1[,c("AB_Activists", "AB_SexWork", "AB_NonNative_pers","AB_Rez", "AB_Citizens", "AB_Runaways", "AB_Drug", "AB_MaleWorker", "AB_Criminal", "AB_TwoParent", "AB_TribalPolice", "AB_Poverty", "AB_NativeComm", "AB_Society", "AB_Abusive", "AB_Laws")]))
+summary(MMIWG1$Att_and_Belief_Score)
+describe(MMIWG1$Att_and_Belief_Score)
+
+```
+#If Familiar
+```{r}
+#National Television
+describe(MMIWG1$`IF FAMILIAR_1`)
+summary(MMIWG1$`IF FAMILIAR_1`)
+#Local Television
+describe(MMIWG1$`IF FAMILIAR_2`)
+summary(MMIWG1$`IF FAMILIAR_2`)
+#Social Media
+describe(MMIWG1$`IF FAMILIAR_3`)
+summary(MMIWG1$`IF FAMILIAR_3`)
+#Word of Mouth
+describe(MMIWG1$`IF FAMILIAR_6`)
+summary(MMIWG1$`IF FAMILIAR_6`)
+#Radio/Podcast
+describe(MMIWG1$`IF FAMILIAR_7`)
+summary(MMIWG1$`IF FAMILIAR_7`)
+#Online Blogs
+describe(MMIWG1$`IF FAMILIAR_8`)
+summary(MMIWG1$`IF FAMILIAR_8`)
+#National Newspapers
+describe(MMIWG1$`IF FAMILIAR_10`)
+summary(MMIWG1$`IF FAMILIAR_10`)
+#Unsure
+describe(MMIWG1$`IF FAMILIAR_11`)
+summary(MMIWG1$`IF FAMILIAR_11`)
+#Published Research Report
+describe(MMIWG1$`IF FAMILIAR_13`)
+summary(MMIWG1$`IF FAMILIAR_13`)
+#Local Newspaper
+describe(MMIWG1$`IF FAMILIAR_14`)
+summary(MMIWG1$`IF FAMILIAR_14`)
+
+```
+#Primary Source
+```{r}
+MMIWG1 <- MMIWG1 %>% 
+  mutate(SourceOnMMIWG = factor(SourceOnMMIWG, 
+                        labels = c("NationalTV", "LocalTV", "SocialMedia", "WordofMouth", "Radio/Podcast", "OnlineBlogs", "NationalNewspaper", "PublishedResearch", "Unsure", "LocalNewspaper", "NotListed")))
+summary(MMIWG1$SourceOnMMIWG)
+
+
+```
+#Support for MMIWG
+```{r}
+MMIWG1<-mutate(MMIWG1, Support_MMIWG = rowMeans(MMIWG1[,c("Sup_Hash", "Sup_Letter", "Sup_Donate","Sup_Authority", "Sup_Prosecute", "Sup_Access", "Sup_Training")]))
+summary(MMIWG1$Support_MMIWG)
+describe(MMIWG1$Support_MMIWG)
+```
+#Responsibility
+```{r}
+
+str(MMIWG1$Res_Stopping_1)
+summary(MMIWG1$Res_Stopping_1)
+describe(MMIWG1$Res_Stopping_1)
+
+#Who is responsible for STOPPING the epidemic of MMIWG?
+    #State & National Government
+
+summary(MMIWG1$Res_Stopping_1)
+describe(MMIWG1$Res_Stopping_1)
+    #Native American Tribes
+summary(MMIWG1$Res_Stopping_2)
+describe(MMIWG1$Res_Stopping_2)
+    #All Americans
+summary(MMIWG1$Res_Stopping_3)
+describe(MMIWG1$Res_Stopping_3)
+    #Parents and Families of MMIWG
+summary(MMIWG1$Res_Stopping_4)
+describe(MMIWG1$Res_Stopping_4)
+#Who is responsible for PREVENTING individual MMIWG attacks?
+    #State & National Government
+summary(MMIWG1$Res_Preventing_1)
+describe(MMIWG1$Res_Preventing_1)
+    #Native American Tribes
+summary(MMIWG1$Res_Preventing_2)
+describe(MMIWG1$Res_Preventing_2)
+    #All Americans
+summary(MMIWG1$Res_Preventing_3)
+describe(MMIWG1$Res_Preventing_3)
+    #Parents and Families of MMIWG
+summary(MMIWG1$Res_Preventing_4)
+describe(MMIWG1$Res_Preventing_4)
+#Who is responsible for bringing awareness MMIWG?
+    #State & National Government
+summary(MMIWG1$Res_Awareness_1)
+describe(MMIWG1$Res_Awareness_1)
+    #Native American Tribes
+summary(MMIWG1$Res_Awareness_1)
+describe(MMIWG1$Res_Awareness_1)
+    #All Americans
+summary(MMIWG1$Res_Awareness_1)
+describe(MMIWG1$Res_Awareness_1)
+    #Parents and Families of MMIWG
+summary(MMIWG1$Res_Awareness_1)
+describe(MMIWG1$Res_Awareness_1)
+
+####Not sure why this is not running... variable values are numeric, but listed as chr... should be able to get descriptives.
+```
+#Invisibility
+```{r}
+MMIWG1 <- MMIWG1 %>% 
+  rename(NtvInvisibility_7 = Invisibility1_13,
+         NtvInvisibitity_8 = Invisibility1_14,
+         NtvInvisibility_9 = Invisibility1_15,
+         NtvInvisibility_10 = Invisibility1_16,
+         NtvInvisibility_11 = Invisibility1_17,
+         NtvInvisibility_12 = Invisibility1_18)
+
+MMIWG1<-mutate(MMIWG1, Ntv_Invisibility = rowMeans(MMIWG1[,c("NtvInvisibility_1", "NtvInvisibility_2", "NtvInvisibility_3","NtvInvisibility_4", "NtvInvisibility_5", "NtvInvisibility_6", "Invisibility1_13", "Invisibility1_14", "Invisibility1_15", "Invisibility1_16", "Invisibility1_17", "Invisibility1_18", "IN_Violence")]))
+summary(MMIWG1$Ntv_Invisibility)
+describe(MMIWG1$Ntv_Invisibility)
+
+###REVERSE CODING###
+```
+#Perception of Sovereignty
+```{r}
+MMIWG1<-mutate(MMIWG1, Percep_Sov = rowMeans(MMIWG1[,c("Sov_Rules", "Sov_Legal", "Sov_Police","Sov_Gov", "Sov_Auto", "Sov_Rely", "Sov_Jurisdiction")]))
+summary(MMIWG1$Ntv_Invisibility)
+describe(MMIWG1$Ntv_Invisibility)
+
+###REVERSE CODING###
+```
+#Racism Minimization
+```{r}
+MMIWG1<-mutate(MMIWG1, RM_Score = rowMeans(MMIWG1[,c("RacismMini_1", "RacismMini_2", "RacismMini_3","RacismMini_4", "RacismMini_5", "RacismMini_6", "RacismMini_7", "RacismMini_8", "RacismMini_9", "RacismMini_10")]))
+summary(MMIWG1$RM_Score)
+describe(MMIWG1$RM_Score)
+
+#REVERSE CODING###
+```
+#Cultural Racism
+```{r}
+
+MMIWG1<-mutate(MMIWG1, CR_Score = rowMeans(MMIWG1[,c("CulturalRacism_1", "CulturalRacism_2", "CulturalRacism_3","CulturalRacism_4", "CulturalRacism_5", "CulturalRacism_6", "CulturalRacism_7", "CulturalRacism_8", "CulturalRacism_9", "CulturalRacism_10", "CulturalRacism_11", "CulturalRacism_12","CulturalRacism_13")]))
+summary(MMIWG1$CR_Score)
+describe(MMIWG1$CR_Score)
+
+###REVERSE CODING###
+```
+#Dehumanization- Natives
+```{r}
+#Responsible
+summary(MMIWG1$NtvDehum_1)
+describe(MMIWG1$NtvDehum_1)
+
+#Civilized
+summary(MMIWG1$NtvDehum_2)
+describe(MMIWG1$NtvDehum_2)
+
+#Moral
+summary(MMIWG1$NtvDehum_3)
+describe(MMIWG1$NtvDehum_3)
+
+#Polite
+summary(MMIWG1$NtvDehum_4)
+describe(MMIWG1$NtvDehum_4)
+
+#Childlike
+summary(MMIWG1$NtvDehum_5)
+describe(MMIWG1$NtvDehum_5)
+
+#Rational
+summary(MMIWG1$NtvDehum_6)
+describe(MMIWG1$NtvDehum_6)
+
+#Warm
+summary(MMIWG1$NtvDehum_7)
+describe(MMIWG1$NtvDehum_7)
+
+#Having Agency
+summary(MMIWG1$NtvDehum_8)
+describe(MMIWG1$NtvDehum_8)
+
+#Native Dehumanization Score
+MMIWG1<-mutate(MMIWG1, NtvDehum_Score = rowMeans(MMIWG1[,c("NtvDehum_1", "NtvDehum_2", "NtvDehum_3","NtvDehum_4", "NtvDehum_5", "NtvDehum_6", "NtvDehum_7", "NtvDehum_8")]))
+summary(MMIWG1$NtvDehum_Score)
+describe(MMIWG1$NtvDehum_Score)
+
+###REVERSE CODING###
+```
+#Dehumanization- Whites
+```{r}
+#Responsible
+summary(MMIWG1$WhiteDehuman_1)
+describe(MMIWG1$WhiteDehuman_1)
+
+#Civilized
+summary(MMIWG1$WhiteDehuman_2)
+describe(MMIWG1$WhiteDehuman_2)
+
+#Moral
+summary(MMIWG1$WhiteDehuman_3)
+describe(MMIWG1$WhiteDehuman_3)
+
+#Polite
+summary(MMIWG1$WhiteDehuman_4)
+describe(MMIWG1$WhiteDehuman_4)
+
+#Childlike
+summary(MMIWG1$WhiteDehuman_5)
+describe(MMIWG1$WhiteDehuman_5)
+
+#Rational
+summary(MMIWG1$WhiteDehuman_6)
+describe(MMIWG1$WhiteDehuman_6)
+
+#Warm
+summary(MMIWG1$WhiteDehuman_7)
+describe(MMIWG1$WhiteDehuman_7)
+
+#Having Agency
+summary(MMIWG1$WhiteDehuman_8)
+describe(MMIWG1$WhiteDehuman_8)
+
+#White Dehumanization Score
+MMIWG1<-mutate(MMIWG1, WhiteDehum_Score = rowMeans(MMIWG1[,c("WhiteDehuman_1", "WhiteDehuman_2", "WhiteDehuman_3","WhiteDehuman_4", "WhiteDehuman_5", "WhiteDehuman_6", "WhiteDehuman_7", "WhiteDehuman_8")]))
+summary(MMIWG1$WhiteDehum_Score)
+describe(MMIWG1$WhiteDehum_Score)
+
+###REVERSE CODING###
+```
+#Feelings Thermometer
+```{r}
+#Natives
+summary(MMIWG1$NtvFeelings_31)
+describe(MMIWG1$NtvFeelings_31)
+
+#Whites
+summary(MMIWG1$White_thermo_31)
+describe(MMIWG1$White_thermo_31)
+```
+#Ambivalent Sexism
+```{r}
+#Hostile Sexism Score
+MMIWG1<-mutate(MMIWG1, HS_Score = rowMeans(MMIWG1[,c("ASI_1", "ASI_2", "ASI_3","ASI_4", "ASI_5", "ASI_6", "ASI_7", "ASI_8", "ASI_9","ASI_10","ASI_11")]))
+summary(MMIWG1$HS_Score)
+describe(MMIWG1$HS_Score)
+#Benevolent Sexism Score
+MMIWG1<-mutate(MMIWG1, BS_Score = rowMeans(MMIWG1[,c("ASI_12", "ASI_13", "ASI_14","ASI_15", "ASI_16", "ASI_17", "ASI_18", "ASI_19", "ASI_20","ASI_21","ASI_22")]))
+summary(MMIWG1$BS_Score)
+describe(MMIWG1$BS_Score)
+#Overall ASI Score
+MMIWG1<-mutate(MMIWG1, ASI_Score = rowMeans(MMIWG1[,c("HS_Score","BS_Score")]))
+summary(MMIWG1$ASI_Score)
+describe(MMIWG1$ASI_Score)
+
+###REVERSE CODING###
+```
+#Race
+```{r}
+#Asian/Pacific Islander=16
+#Black/African American=42
+#White/Caucasian=205
+#Hispanic/Latino=27
+#MiddleE Eastern= 
+#Native American=10
+#Another racial/ethnic background=3
+#Text= Filipino, Mixed, mixed
+
+```
+#Gender 
+```{r}
+summary(MMIWG1$Gender)
+```
+#Age
+```{r}
+str(MMIWG1$Age)
+describe(MMIWG1$Age)
+```
+#Born in the US
+```{r}
+summary(MMIWG1$BorninUS)
+```
+#SES
+```{r}
+summary(MMIWG1$SES)
+```
+#Citizen
+```{r}
+summary(MMIWG1$Citizen)
+```
+#Liberal/Conservative
+```{r}
+summary(MMIWG1$LibCon)
+```
+#News Source
+```{r}
+summary(MMIWG1$NewsSource)
+```
