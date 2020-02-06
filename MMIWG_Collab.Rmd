@@ -1,0 +1,21 @@
+---
+title: "MMIWG_2_05_2020"
+author: "Jamie Yellowtail"
+date: "2/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, libraries_and_dataset}
+
+library(here)
+library(rio)
+library(tidyverse)
+
+data <- import(here("MMIWG", "Data", "MMIWG.csv"), setclass = "tbl_df")
+
+```
+
