@@ -14,8 +14,30 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(rio)
 library(tidyverse)
+library(janitor)
 
-data <- import(here("MMIWG", "Data", "MMIWG.csv"), setclass = "tbl_df")
+data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
+
+
+```
+
+```{r, tidydata_ts}
+
+#Select variables of interest and filter for White respondents
+
+data_tanya_proj <- data %>%
+  select(Race, Age.r, Gender, Sup_Hash, Sup_Letter, Sup_Donate, Sup_Authority, Sup_Prosecute, Sup_Access, Sup_Training, NtvInvisibility_1, NtvInvisibility_2, NtvInvisibility_3, NtvInvisibility_4, NtvInvisibility_5, NtvInvisibility_6, IN_Violence, Invisibility1_13, Invisibility1_14, Invisibility1_15, Invisibility1_16, Invisibility1_17, Invisibility1_18) %>%
+  clean_names() %>%
+  filter(race == 3)
+
+```
+
+```{r, descriptive_statistics}
+
+
+mean(data_tanya_proj$age_r, na.rm = TRUE)
+
+#37.62
 
 ```
 
