@@ -15,6 +15,8 @@ library(here)
 library(rio)
 library(tidyverse)
 library(janitor)
+library(pwr)
+install.packages("pwr")
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
@@ -145,9 +147,15 @@ Invisibility <-
 ```
 
 ```{r}
-Supp <- data.frame(Support, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+Supp <- data.frame(Support, Invisibility, MMIWG)
 
-support.model <- lm(Support ~ 1 + Invisibility + RaceMini + Violence + MMIWG, data = Supp)
+support.model <- lm(Support ~ 1 + Invisibility, data = Supp)
 
 summary(support.model)
+```
+
+```{r}
+knowledge.model <- lm(Support ~ 1 + MMIWG, data = Supp)
+
+summary(knowledge.model)
 ```
