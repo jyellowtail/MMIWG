@@ -41,3 +41,113 @@ mean(data_tanya_proj$age_r, na.rm = TRUE)
 
 ```
 
+Knowledge about MMIWG
+```{r}
+summary(data$MMIWG)
+
+MMIWG <- as.data.frame(data$MMIWG)
+
+```
+
+Knowledge about Metoo
+```{r}
+# Knowledge about MeToo 
+
+summary(data$MeToo)
+
+MeToo <- as.data.frame(data$MeToo)
+
+# Knowledge about MMIWG
+
+
+```
+
+# Support for ending MMIWG (5 point)
+```{r}
+# Higher values = more support
+
+sup <- data %>%
+  dplyr::select(Sup_Hash,
+                Sup_Letter,
+                Sup_Donate,
+                Sup_Authority,
+                Sup_Prosecute,
+                Sup_Access,
+                Sup_Training
+                )
+
+sup.df <- as.data.frame(sup)
+
+# psych::alpha(sup.df, check.keys = TRUE)
+
+Support <-
+  multicon::composite(sup.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+```
+
+Overall Invisibility Scale
+```{r}
+# Higher values = greater invisibility
+
+data.in <- data %>%
+  dplyr::rename(NtvInvisibility_7 = Invisibility1_13,
+         NtvInvisibility_8 = Invisibility1_14,
+         NtvInvisibility_9 = Invisibility1_15,
+         NtvInvisibility_10 = Invisibility1_16,
+         NtvInvisibility_11 = Invisibility1_17,
+         NtvInvisibility_12 = Invisibility1_18,
+         NtvInvisibility_1 = NtvInvisibility_1,
+         NtvInvisibility_2 = NtvInvisibility_2,
+         NtvInvisibility_3 = NtvInvisibility_3,
+         NtvInvisibility_4 = NtvInvisibility_4,
+         NtvInvisibility_5 = NtvInvisibility_5,
+         NtvInvisibility_6 = NtvInvisibility_6)
+
+in.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_1,
+    NtvInvisibility_2,
+    NtvInvisibility_3,
+    NtvInvisibility_4,
+    NtvInvisibility_5,
+    NtvInvisibility_6,
+    NtvInvisibility_7,
+    NtvInvisibility_8,
+    NtvInvisibility_9,
+    NtvInvisibility_10,
+    NtvInvisibility_11,
+    NtvInvisibility_12
+    )
+
+in.key <- c(1, -1, 1, 1,
+           1, 1, 1, -1,
+           1, 1, 1, 1)
+
+in.r <-
+  reverse.code(in.key,
+               in.raw,
+               mini = 1,
+               maxi = 7)
+
+in.df <- as.data.frame(in.r)
+
+# Item analysis
+
+# psych::alpha(in.df, check.keys = TRUE)
+
+Invisibility <-
+  multicon::composite(in.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+```
+
+```{r}
+Supp <- data.frame(Support, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+
+support.model <- lm(Support ~ 1 + Invisibility + RaceMini + Violence + MMIWG, data = Supp)
+
+summary(support.model)
+```
