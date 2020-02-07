@@ -21,8 +21,9 @@ library(pwr) #power analysis
 library(psych) #recoding variables
 #install.packages("lavaan")
 #install.packages("pwr")
-require(lavaan) #madiation model
+require(lavaan) #mediation model
 library(dplyr)
+library(shiny) # power analysis 
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
@@ -72,7 +73,7 @@ male <- percent_gen(2) ##### This is wrong! Will come back to it
 ```
 
 
-# Support for ending MMIWG (5 point) Composite
+Support
 ```{r support_composite}
 # Higher values = more support
 sup <- data_tidy %>%
@@ -88,7 +89,7 @@ Support <-
   nomiss = 0.6)
 ```
 
-#Invisibility Scale Composite
+Invsibility
 ```{r invisibility_composite}
 # Higher values = greater invisibility
 
@@ -125,17 +126,7 @@ Invisibility <-
   nomiss = 0.6)
 ```
 
-# Attitudes and Beliefs (3 Factors)
-
-1. Victim Blaming (7-point scale)
-_Higher scores indicate more victim blaming_
-+ MMIWG are not as big of a problem as activists would like people to think.
-+ MMIWG were involved in sex work.
-+ MMIWG only takes place on the reservation.
-+ MMIWG under 18 were runaways.
-+ MMIWG were using drugs and/or alcohol.
-+ MMIWG were involved in criminal activity.
-
+Victim Blaming
 ```{r vic_blame_composite}
 vicblame.raw <- data_tidy %>%
   dplyr::select(
@@ -154,14 +145,7 @@ vicblame.df <- as.data.frame(vicblame.raw)
 VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
 ```
 
-2. Structural forces and outside factors (7-point scale)
-_Higher scores take into account more structural forces_
-+ MMIWG are a result of violence perpetrated by non-Natives.
-+ Ending the MMIWG crisis is the responsibility of all U.S. citizens.
-+ Non-native male workers that live near reservations contribute to the high rates of  MMIWG.
-+ Tribal police forces do not have the resources to prevent Native women from being murdered and going missing.
-+ Policies and laws that make it difficult to prosecute Non-native offenders contribute to the epidemic of MMIWG.
-+ Native women are murdered and go missing because U.S. society does not value Native women.
+Structural Forces
 ```{r structural_forces_composite}
 structuralforces.raw <- data_tidy %>%
   dplyr::select(
@@ -186,8 +170,6 @@ StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=
 ```
 
 Racism Minimization
-_Higher scores indicate more racism minimization_
-+ Enter Racism Minimization items
 ```{r race_mini_composite}
 racemini.raw <- data_tidy %>%
   dplyr::select(
@@ -213,17 +195,23 @@ var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMi
 (corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
 ```
 
+```{r}
+runGitHub("mc_power_med", "schoam4") # run power analysis here
+```
 
-```{r Mediation Model}
+
+```{r Invisibility Mediation Model}
 
 X <- var$Support
 M1 <- var$VictimBlaming
 M2 <- var$StructuralForces
 Y <- var$Invisibility
 
-mediate.data <- data.frame(X = X, Y = X, M1 = M1, M2 = M2)
+in.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
 
-multipleMediation <- '
+
+
+in.multipleMediation <- '
     Y ~ b1 * M1 + b2 * M2 + c * X
     M1 ~ a1 * X
     M2 ~ a2 * X
@@ -232,25 +220,34 @@ multipleMediation <- '
     total    := c + (a1 * b1) + (a2 * b2)
     M1 ~~ M2 
 '
-fit <- sem(model = multipleMediation, data = mediate.data)
-summary(fit)
+
+in.fit <- sem(model = in.multipleMediation, data = in.mediate.data)
+summary(in.fit)    
+
 ```
 
+```{r Racism Minimization Mediation Model}
 
-#Linear models
+X <- var$Support
+M1 <- var$VictimBlaming
+M2 <- var$StructuralForces
+Y <- var$RaceMini
 
-```{r}
-knowledge.model <- lm(Support ~ 1 + MMIWG, data = Supp)
+rm.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
 
-summary(knowledge.model)
+
+
+rm.multipleMediation <- '
+    Y ~ b1 * M1 + b2 * M2 + c * X
+    M1 ~ a1 * X
+    M2 ~ a2 * X
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    M1 ~~ M2 
+'
+
+rm.fit <- sem(model = rm.multipleMediation, data = rm.mediate.data)
+summary(rm.fit)    
+
 ```
-
-
-```{r}
-Supp <- data.frame(Support, Invisibility, MMIWG)
-
-support.model <- lm(Support ~ 1 + Invisibility, data = Supp)
-
-summary(support.model)
-```
-
