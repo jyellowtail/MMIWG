@@ -3,80 +3,77 @@ title: "MMIWG_2_05_2020"
 author: "Jamie Yellowtail"
 date: "2/5/2020"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, libraries_and_dataset}
+```{r libraries_and_dataset}
 
 library(here)
 library(rio)
 library(tidyverse)
 library(janitor)
 library(pwr)
-install.packages("pwr")
+library(psych)
+#install.packages("pwr")
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
 
 ```
 
-```{r, tidydata_ts}
+```{r select_variables}
 
 #Select variables of interest and filter for White respondents
 
-data_tanya_proj <- data %>%
-  select(Race, Age.r, Gender, Sup_Hash, Sup_Letter, Sup_Donate, Sup_Authority, Sup_Prosecute, Sup_Access, Sup_Training, NtvInvisibility_1, NtvInvisibility_2, NtvInvisibility_3, NtvInvisibility_4, NtvInvisibility_5, NtvInvisibility_6, IN_Violence, Invisibility1_13, Invisibility1_14, Invisibility1_15, Invisibility1_16, Invisibility1_17, Invisibility1_18) %>%
+data_tidy <- data %>%
+  select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
   clean_names() %>%
-  filter(race == 3)
-
-```
-
-```{r, descriptive_statistics}
-
-
-mean(data_tanya_proj$age_r, na.rm = TRUE)
-
-#37.62
-
-```
-
-Knowledge about MMIWG
-```{r}
-summary(data$MMIWG)
-
-MMIWG <- as.data.frame(data$MMIWG)
-
-```
-
-Knowledge about Metoo
-```{r}
-# Knowledge about MeToo 
-
-summary(data$MeToo)
-
-MeToo <- as.data.frame(data$MeToo)
-
-# Knowledge about MMIWG
+  filter(race == "3")
 
 
 ```
 
-# Support for ending MMIWG (5 point)
-```{r}
+```{r descriptive_statistics}
+
+
+#Age statistics
+mean_age <- mean(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
+sd_age <- sd(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
+r1_age <- min(as.numeric(data_tidy$age_r), na.rm = TRUE)
+n <- nrow(data_tidy)
+
+#Ethnicity
+#I'm creating a function that will spit out the percentage of people with a given ethnicity, including a % sign (For the entire data set)
+percent_ethn <- function(pos){
+  paste(((table(data$Race)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
+black <- percent_ethn(1)
+asian <- percent_ethn(2)
+white <- percent_ethn(3)
+hispanic <- percent_ethn(4)
+native <- percent_ethn(5)
+other <- percent_ethn(6)
+
+#Gender 
+percent_gen <- function(pos){
+  paste(((table(data$Gender)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
+female <- percent_gen(1)
+male <- percent_gen(2) ##### This is wrong! Will come back to ir#####
+
+
+```
+
+
+# Support for ending MMIWG (5 point) Composite
+```{r support_composite}
 # Higher values = more support
 
-sup <- data %>%
-  dplyr::select(Sup_Hash,
-                Sup_Letter,
-                Sup_Donate,
-                Sup_Authority,
-                Sup_Prosecute,
-                Sup_Access,
-                Sup_Training
-                )
+sup <- data_tidy %>%
+  dplyr::select(sup_hash:sup_training)
 
 sup.df <- as.data.frame(sup)
 
@@ -89,39 +86,21 @@ Support <-
 
 ```
 
-Overall Invisibility Scale
-```{r}
+#Invisibility Scale Composite
+```{r invisibility_composite}
 # Higher values = greater invisibility
 
-data.in <- data %>%
-  dplyr::rename(NtvInvisibility_7 = Invisibility1_13,
-         NtvInvisibility_8 = Invisibility1_14,
-         NtvInvisibility_9 = Invisibility1_15,
-         NtvInvisibility_10 = Invisibility1_16,
-         NtvInvisibility_11 = Invisibility1_17,
-         NtvInvisibility_12 = Invisibility1_18,
-         NtvInvisibility_1 = NtvInvisibility_1,
-         NtvInvisibility_2 = NtvInvisibility_2,
-         NtvInvisibility_3 = NtvInvisibility_3,
-         NtvInvisibility_4 = NtvInvisibility_4,
-         NtvInvisibility_5 = NtvInvisibility_5,
-         NtvInvisibility_6 = NtvInvisibility_6)
+data.in <- data_tidy %>%
+  dplyr::rename(ntv_invisibility_7 = invisibility1_13,
+         ntv_invisibility_8 = invisibility1_14,
+         ntv_invisibility_9 = invisibility1_15,
+         ntv_invisibility_10 = invisibility1_16,
+         ntv_invisibility_11 = invisibility1_17,
+         ntv_invisibility_12 = invisibility1_18)
 
 in.raw <- data.in %>%
   dplyr::select(
-    NtvInvisibility_1,
-    NtvInvisibility_2,
-    NtvInvisibility_3,
-    NtvInvisibility_4,
-    NtvInvisibility_5,
-    NtvInvisibility_6,
-    NtvInvisibility_7,
-    NtvInvisibility_8,
-    NtvInvisibility_9,
-    NtvInvisibility_10,
-    NtvInvisibility_11,
-    NtvInvisibility_12
-    )
+    ntv_invisibility_1:ntv_invisibility_12)
 
 in.key <- c(1, -1, 1, 1,
            1, 1, 1, -1,
@@ -133,19 +112,101 @@ in.r <-
                mini = 1,
                maxi = 7)
 
-in.df <- as.data.frame(in.r)
+invisibility.df <- as.data.frame(in.r)
 
 # Item analysis
 
 # psych::alpha(in.df, check.keys = TRUE)
 
 Invisibility <-
-  multicon::composite(in.df,
+  multicon::composite(invisibility.df,
   rel = TRUE,
   nomiss = 0.6)
 
 ```
 
+# Attitudes and Beliefs (3 Factors)
+
+1. Victim Blaming (7-point scale)
++ MMIWG are not as big of a problem as activists would like people to think.
++ MMIWG were involved in sex work.
++ MMIWG only takes place on the reservation.
++ MMIWG under 18 were runaways.
++ MMIWG were using drugs and/or alcohol.
++ MMIWG were involved in criminal activity.
+
+```{r vic_blame_composite}
+vicblame.raw <- data_tidy %>%
+  dplyr::select(
+    ab_activists,
+    ab_sex_work,
+    ab_rez,
+    ab_runaways,
+    ab_drug,
+    ab_criminal
+    )
+
+#Took out the key and reverse coding since the direction did not change for any of these values. 
+
+vicblame.df <- as.data.frame(vicblame.raw)
+
+VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
+```
+
+2. Structural forces and outside factors (7-point scale)
+_Higher scores take into account more structural forces_
++ MMIWG are a result of violence perpetrated by non-Natives.
++ Ending the MMIWG crisis is the responsibility of all U.S. citizens.
++ Non-native male workers that live near reservations contribute to the high rates of  MMIWG.
++ Tribal police forces do not have the resources to prevent Native women from being murdered and going missing.
++ Policies and laws that make it difficult to prosecute Non-native offenders contribute to the epidemic of MMIWG.
++ Native women are murdered and go missing because U.S. society does not value Native women.
+```{r structural_forces_composite}
+
+structuralforces.raw <- data_tidy %>%
+  dplyr::select(
+    ab_non_native_pers,
+    ab_citizens,
+    ab_male_worker,
+    ab_tribal_police,
+    ab_laws,
+    ab_society
+    )
+
+structuralforces.key <- c(1, 1, 1, 1, 1, -1)
+
+structuralforces.r <- reverse.code(structuralforces.key,
+                                structuralforces.raw,
+                                mini=1,
+                                maxi=7)
+
+structuralforces.df <- as.data.frame(structuralforces.r)
+
+StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
+```
+
+Racism Minimization
+```{r race_mini_composite}
+racemini.raw <- data_tidy %>%
+  dplyr::select(
+    racism_mini_1:racism_mini_10
+    )
+
+racemini.key <- c(1, -1, 1, -1, -1,
+                  -1, -1, 1, 1, 1)
+
+racemini.r <- reverse.code(racemini.key,
+                           racemini.raw,
+                           mini = 1,
+                           maxi = 7)
+
+racemini.df <- as.data.frame(racemini.r)
+
+RaceMini <-
+  multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
+```
+
+#Linear models
 ```{r}
 Supp <- data.frame(Support, Invisibility, MMIWG)
 
