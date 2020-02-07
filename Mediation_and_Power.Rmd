@@ -161,19 +161,6 @@ Support <-
   nomiss = 0.6)
 ```
 
-# Power Analysis 
-```{r Prep for Power analysis}
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
-
-(corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
-```
-
-```{r Power Analysis}
-# runGitHub("mc_power_med", "schoam4") 
-# this code takes you to site for power analysis calculator
-# here is link - https://schoemanna.shinyapps.io/mc_power_med/
-```
-
 # Mediation Analysis
 
 ## Invisibility Mediation Model 
@@ -228,4 +215,17 @@ rm.multipleMediation <- '
 rm.fit <- sem(model = rm.multipleMediation, data = rm.mediate.data)
 summary(rm.fit)    
 
+```
+
+# Power Analysis 
+```{r Prep for Power analysis}
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
+
+(corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
+```
+
+```{r Power Analysis Calculator}
+# runGitHub("mc_power_med", "schoam4") 
+# this code takes you to site for power analysis calculator
+# here is link - https://schoemanna.shinyapps.io/mc_power_med/
 ```
