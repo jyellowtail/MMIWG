@@ -2,7 +2,14 @@
 title: "Power Analysis & Mediation"
 author: "Julisa"
 date: "2/7/2020"
-output: html_document
+output: 
+  html_document:
+    toc: True
+    toc_depth: 5
+    toc_float: 
+      collapsed: False
+    number_sections: True
+    code_folding: hide
 ---
 
 # Prepping Data 
@@ -162,7 +169,9 @@ var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMi
 ```
 
 ```{r Power Analysis}
-runGitHub("mc_power_med", "schoam4") # run power analysis here
+# runGitHub("mc_power_med", "schoam4") 
+# this code takes you to site for power analysis calculator
+# here is link - https://schoemanna.shinyapps.io/mc_power_med/
 ```
 
 # Mediation Analysis
