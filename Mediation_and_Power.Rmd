@@ -5,19 +5,17 @@ date: "2/7/2020"
 output: html_document
 ---
 
+# Prepping Data 
 ```{r libraries_and_dataset}
 
 library(here) #collaboration
 library(rio) #import data
 library(tidyverse) #Tidy data
 library(janitor) #clean-up variables
-library(pwr) #power analysis
 library(psych) #recoding variables
-#install.packages("lavaan")
-#install.packages("pwr")
 require(lavaan) #mediation model
-library(dplyr)
-library(shiny) # power analysis 
+library(dplyr) # for selecting variables
+library(shiny) # to load in power analysis
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
@@ -39,7 +37,7 @@ data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
 
 ```
 
-Invsibility
+Invsibility Composite
 ```{r invisibility_composite}
 # Higher values = greater invisibility
 
@@ -76,7 +74,7 @@ Invisibility <-
   nomiss = 0.6)
 ```
 
-Racism Minimization
+Racism Minimization Composite
 ```{r race_mini_composite}
 racemini.raw <- data_tidy %>%
   dplyr::select(
@@ -97,7 +95,7 @@ RaceMini <-
 
 ```
 
-Victim Blaming
+Victim Blaming Composite
 ```{r vic_blame_composite}
 vicblame.raw <- data_tidy %>%
   dplyr::select(
@@ -116,7 +114,7 @@ vicblame.df <- as.data.frame(vicblame.raw)
 VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
 ```
 
-Structural Forces
+Structural Forces Composite
 ```{r structural_forces_composite}
 structuralforces.raw <- data_tidy %>%
   dplyr::select(
@@ -140,7 +138,7 @@ structuralforces.df <- as.data.frame(structuralforces.r)
 StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
 ```
 
-Support
+Support Composite
 ```{r support_composite}
 # Higher values = more support
 sup <- data_tidy %>%
@@ -156,7 +154,7 @@ Support <-
   nomiss = 0.6)
 ```
 
-Power Analysis 
+# Power Analysis 
 ```{r Prep for Power analysis}
 var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
@@ -167,7 +165,9 @@ var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMi
 runGitHub("mc_power_med", "schoam4") # run power analysis here
 ```
 
-Mediation Analysis
+# Mediation Analysis
+
+## Invisibility Mediation Model 
 ```{r Invisibility Mediation Model}
 
 X <- var$Support
@@ -194,6 +194,7 @@ summary(in.fit)
 
 ```
 
+## Racism Minimization Mediation Model
 ```{r Racism Minimization Mediation Model}
 
 X <- var$Support
