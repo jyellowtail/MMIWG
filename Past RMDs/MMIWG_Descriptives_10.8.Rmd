@@ -1,0 +1,1184 @@
+---
+title: "MMIWG"
+author: "Julisa Lopez"
+date: "10/1/2019"
+output:
+  html_document:
+    toc: True
+    toc_depth: 5
+    toc_float:
+      collapsed: False
+    number_sections: True
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+Necessary Packages
+```{r}
+
+library(psych) # For reverse coding variables, reading data files and item analysis
+library(multicon) # For creating composites
+library(tidyverse)
+#install.packages("haven")
+library(haven)
+#install.packages("labelled")
+library(labelled)
+#install.packages("nFactors")
+library(nFactors) # Determines how many factors to extract
+library(dplyr) #clean up data
+#install.packages("corrplot")
+library(corrplot) # For correlation matrix
+library(GGally)
+#install.packages("Rmisc") #Multiplot
+library(Rmisc)
+library(survey) # correlation plot with significance
+library(xtable) # creates html tables 
+library(htmltools)
+library(htmlTable)
+
+#install.packages(c("psych", "multicon", "tidyverse", "haven", "labelled", "nFactors", "dplyr", "corrplot", "GGally", "Rmisc", "survey", "xtable", "htmltools", "htmlTable"))
+
+library(backports)
+
+```
+
+
+Prepping Data File
+```{r Read Data File}
+
+data <- read_spss("C:/Users/Julisa/Desktop/MMIWG.sav")
+
+data <- data %>%
+  dplyr::rename(Mauna_Kea = Movements_16)
+
+data <- data %>% dplyr::filter(Race == 3)
+
+
+
+```
+
+Corstars function to create correlation matrix with astrix
+```{r}
+corstars <-function(x, method=c("pearson", "spearman"), removeTriangle=c("upper", "lower"),
+                     result=c("none", "html", "latex")){
+    #Compute correlation matrix
+    require(Hmisc)
+    x <- as.matrix(x)
+    correlation_matrix<-rcorr(x, type=method[1])
+    R <- correlation_matrix$r # Matrix of correlation coeficients
+    p <- correlation_matrix$P # Matrix of p-value 
+    
+    ## Define notions for significance levels; spacing is important.
+    mystars <- ifelse(p < .0001, "****", ifelse(p < .001, "*** ", ifelse(p < .01, "**  ", ifelse(p < .05, "*   ", "    "))))
+    
+    ## trunctuate the correlation matrix to two decimal
+    R <- format(round(cbind(rep(-1.11, ncol(x)), R), 2))[,-1]
+    
+    ## build a new matrix that includes the correlations with their apropriate stars
+    Rnew <- matrix(paste(R, mystars, sep=""), ncol=ncol(x))
+    diag(Rnew) <- paste(diag(R), " ", sep="")
+    rownames(Rnew) <- colnames(x)
+    colnames(Rnew) <- paste(colnames(x), "", sep="")
+    
+    ## remove upper triangle of correlation matrix
+    if(removeTriangle[1]=="upper"){
+      Rnew <- as.matrix(Rnew)
+      Rnew[upper.tri(Rnew, diag = TRUE)] <- ""
+      Rnew <- as.data.frame(Rnew)
+    }
+    
+    ## remove lower triangle of correlation matrix
+    else if(removeTriangle[1]=="lower"){
+      Rnew <- as.matrix(Rnew)
+      Rnew[lower.tri(Rnew, diag = TRUE)] <- ""
+      Rnew <- as.data.frame(Rnew)
+    }
+    
+    ## remove last column and return the correlation matrix
+    Rnew <- cbind(Rnew[1:length(Rnew)-1])
+    if (result[1]=="none") return(Rnew)
+    else{
+      if(result[1]=="html") print(xtable(Rnew), type="html")
+      else print(xtable(Rnew), type="latex") 
+    }
+} 
+```
+
+# Demographics
+
+## Race
+```{r}
+#table(data$Race)
+```
+
+## Gender
+Gender: Male- 166; Females-114; N/A-20
+No entries: Transgender man, Transgender woman, Non-binary, Genderqueer
+```{r}
+#table(data$Gender)
+```
+
+## SES - highest level of education
+HS Diploma = 73, AA = 45, BA/BS = 132, MA/MS = 26, Doctorate = 5
+
+```{r}
+# table(data$SES)
+```
+
+## Born in US
+Born in the US: Yes- 269; No-12; N/A- 19
+
+```{r}
+# table(data$BorninUS)
+```
+
+## Citizen
+No-3 Yes-9; N/A- 288
+```{r}
+# table(data$Citizen)
+```
+
+## Age
+```{r}
+
+summary(data$Age.r)
+
+Age <- as.data.frame(data$Age.r)
+
+```
+
+## Liberal/Conservative
+```{r}
+
+summary(data$LibCon)
+
+LibCon <- as.data.frame(data$LibCon)
+
+
+#Liberal/Conservative: Extremely Conservative:20; Conservative:26; Somewhat Conservative:21; Moderate:69; Somewhat Liberal:42; Liberal:51; Extremely Liberal: 49; NA: 22
+```
+
+## News Source
+Primary News Source: National TV: 76; Local TV: 20; Social Media: 97; Radio/Podcast: 13; Online Blog: 23; National Newspaper: 33; Local Newspaper: 7; Published Research Report: 4; Word of Mouth: 6; Unsure: 2; N/A: 19
+```{r}
+
+# (primnews <- (table(data$NewsSource)))
+
+
+```
+
+
+# Knowledge of Social Movements
+
+Knowledge about Metoo
+```{r}
+# Knowledge about MeToo 
+
+summary(data$MeToo)
+
+table(data$MMIWG)
+
+MeToo <- as.data.frame(data$MeToo)
+
+# Knowledge about MMIWG
+
+
+```
+
+Knowledge about MMIWG
+```{r}
+summary(data$MMIWG)
+
+MMIWG <- as.data.frame(data$MMIWG)
+
+```
+
+# Attitudes and Beliefs (3 Factors)
+
+1. Victim Blaming
++ MMIWG are not as big of a problem as activists would like people to think.
++ MMIWG were involved in sex work.
++ MMIWG only takes place on the reservation.
++ MMIWG under 18 were runaways.
++ MMIWG were using drugs and/or alcohol.
++ MMIWG were involved in criminal activity.
+
+```{r}
+#Higher = More victim blame
+
+vicblame.raw <- data %>%
+  dplyr::select(
+    AB_Activists,
+    AB_SexWork,
+    AB_Rez,
+    AB_Runaways,
+    AB_Drug,
+    AB_Criminal
+    )
+
+vicblame.key <- c(1, 1, 1, 1, 1, 1)
+
+vicblame.r <- reverse.code(vicblame.key,
+                           vicblame.raw,
+                           mini = 1,
+                           maxi = 7)
+
+vicblame.df <- as.data.frame(vicblame.r)
+
+VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
+```
+
+
+2. Institution level and outside factors
++ MMIWG are a result of violence perpetrated by non-Natives.
++ Ending the MMIWG crisis is the responsibility of all U.S. citizens.
++ Non-native male workers that live near reservations contribute to the high rates of  MMIWG.
++ Tribal police forces do not have the resources to prevent Native women from being murdered and going missing.
++ Policies and laws that make it difficult to prosecute Non-native offenders contribute to the epidemic of MMIWG.
++ Native women are murdered and go missing because U.S. society does not value Native women.
+
+```{r}
+# Higher = Takes into account external factors
+
+externfactors.raw <- data %>%
+  dplyr::select(
+    AB_NonNative_pers,
+    AB_Citizens,
+    AB_MaleWorker,
+    AB_TribalPolice,
+    AB_Laws,
+    AB_Society
+    )
+
+externfactors.key <- c(1, 1, 1, 1, 1, -1)
+
+externfactors.r <- reverse.code(externfactors.key,
+                                externfactors.raw,
+                                mini=1,
+                                maxi=7)
+
+externfactors.df <- as.data.frame(externfactors.r)
+
+ExternalFactors <- multicon::composite(externfactors.df, rel = TRUE, nomiss=0.6)
+```
+
+
+3. Community Blame
++ The lack of two parent homes in tribal communities puts Native American girls at risk of going missing.
++ MMIWG are the result of poverty within Native communities.
++ Native women are murdered and go missing because Native communities do not value Native women.
++ MMIWG under 18 come from abusive homes.
+
+```{r}
+# Higher = more community blame, more negative attitudes
+
+commblame.raw <- data %>%
+  dplyr::select(
+    AB_TwoParent,
+    AB_Poverty,
+    AB_NativeComm,
+    AB_Abusive
+    )
+
+commblame.key <- c(1, 1, 1, 1)
+
+commblame.r <-
+  reverse.code(commblame.key,
+               commblame.raw,
+               mini = 1,
+               maxi = 7)
+
+commblame.df <- as.data.frame(commblame.r)
+
+
+CommunityBlame <- multicon::composite(commblame.df, rel = TRUE, nomiss = 0.6)
+
+```
+
+# Support for ending MMIWG (5 point)
+```{r}
+# Higher values = more support
+
+sup <- data %>%
+  dplyr::select(Sup_Hash,
+                Sup_Letter,
+                Sup_Donate,
+                Sup_Authority,
+                Sup_Prosecute,
+                Sup_Access,
+                Sup_Training
+                )
+
+sup.df <- as.data.frame(sup)
+
+# psych::alpha(sup.df, check.keys = TRUE)
+
+Support <-
+  multicon::composite(sup.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+```
+
+# Responsibility
+
+## Who is responsible for stopping the epidemic of MMIWG?
+US Government, Tribal Government, US Citizens, Parents and Families of victims
+```{r}
+
+summary(data$Res_Stopping_1)
+summary(data$Res_Stopping_2)
+summary(data$Res_Stopping_3)
+summary(data$Res_Stopping_4)
+
+```
+
+## Who is responsible for preventing individual MMIWG attacks?
+US Government, Tribal Government, US Citizens, Parents and Families of victims
+```{r}
+summary(data$Res_Preventing_1)
+summary(data$Res_Preventing_2)
+summary(data$Res_Preventing_3)
+summary(data$Res_Preventing_4)
+```
+
+## Who is responsible for bringing awareness to MMIWG?
+US Government, Tribal Government, US Citizens, Parents and Families of victims
+```{r}
+
+summary(data$Res_Awareness_1)  
+summary(data$Res_Awareness_2)
+summary(data$Res_Awareness_3)
+summary(data$Res_Awareness_4)
+
+```
+
+# Invisibility
+
+Overall Invisibility Scale
+```{r}
+# Higher values = greater invisibility
+
+data.in <- data %>%
+  dplyr::rename(NtvInvisibility_7 = Invisibility1_13,
+         NtvInvisibility_8 = Invisibility1_14,
+         NtvInvisibility_9 = Invisibility1_15,
+         NtvInvisibility_10 = Invisibility1_16,
+         NtvInvisibility_11 = Invisibility1_17,
+         NtvInvisibility_12 = Invisibility1_18,
+         NtvInvisibility_1 = NtvInvisibility_1,
+         NtvInvisibility_2 = NtvInvisibility_2,
+         NtvInvisibility_3 = NtvInvisibility_3,
+         NtvInvisibility_4 = NtvInvisibility_4,
+         NtvInvisibility_5 = NtvInvisibility_5,
+         NtvInvisibility_6 = NtvInvisibility_6)
+
+in.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_1,
+    NtvInvisibility_2,
+    NtvInvisibility_3,
+    NtvInvisibility_4,
+    NtvInvisibility_5,
+    NtvInvisibility_6,
+    NtvInvisibility_7,
+    NtvInvisibility_8,
+    NtvInvisibility_9,
+    NtvInvisibility_10,
+    NtvInvisibility_11,
+    NtvInvisibility_12
+    )
+
+in.key <- c(1, -1, 1, 1,
+           1, 1, 1, -1,
+           1, 1, 1, 1)
+
+in.r <-
+  reverse.code(in.key,
+               in.raw,
+               mini = 1,
+               maxi = 7)
+
+in.df <- as.data.frame(in.r)
+
+# Item analysis
+
+# psych::alpha(in.df, check.keys = TRUE)
+
+Invisibility <-
+  multicon::composite(in.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+```
+
+1. Factor 1
++ I rarely think about Native/Indigenous Americans in contemporary society.
++ When I think about poverty, Native/Indigenous Americans do not come to mind.
++ When I think about groups that experience racism and discrimination Native/Indigenous Americans do not come to mind.
++ When I think about successful Americans, Native/Indigenous do not come to mind.
++ When I think about actors and actresses, Native/Indigenous Americans do not come to mind.
++ When I think about healthy families, Native/Indigenous Americans do not come to mind.
++ When I think about health disparities, Native/Indigenous Americans come to mind.
+
+```{r}
+# Factor 1 - higher = more invisible
+
+in.fac1.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_6,
+    NtvInvisibility_7,
+    NtvInvisibility_8,
+    NtvInvisibility_9,
+    NtvInvisibility_10,
+    NtvInvisibility_11,
+    NtvInvisibility_12
+    )
+
+in.fac1.key <- c(1, 1, -1, 1,
+           1, 1, 1)
+
+in.fac1.r <-
+  reverse.code(in.fac1.key,
+               in.fac1.raw,
+               mini = 1,
+               maxi = 7)
+
+in.fac1.df <- as.data.frame(in.fac1.r)
+
+# Item analysis
+
+# psych::alpha(in.fac1.df, check.keys = TRUE)
+
+Invisibility1 <-
+  multicon::composite(in.fac1.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+
+2. Factor 2
++ Native/Indigenous Americans are invisible in contemporary society.
++ I rarely hear about Native/Indigenous Americans in contemporary society.
+
+```{r}
+#Factor 2 - higher = more invisible
+
+in.fac2.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_1,
+    NtvInvisibility_2,
+    NtvInvisibility_3)
+
+in.fac2.key <- c(1, -1, 1)
+
+in.fac2.r <-
+  reverse.code(in.fac2.key,
+               in.fac2.raw,
+               mini = 1,
+               maxi = 7)
+
+in.fac2.df <- as.data.frame(in.fac2.r)
+
+# Item analysis
+
+# psych::alpha(in.fac2.df, check.keys = TRUE)
+
+Invisibility2 <-
+  multicon::composite(in.fac2.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+
+3. Factor 3
++ There are hardly any Native/Indigenous Americans left in U.S. society.
++ In contemporary society, there are not any real  Native/Indigenous Americans.
++ There is a significant number of Native/Indigenous Americans who live in U.S. society today.
+
+```{r}
+
+in.fac3.raw <- data.in %>%
+  dplyr::select(
+    NtvInvisibility_4,
+    NtvInvisibility_5
+    )
+
+in.fac3.key <- c(1, 1)
+
+in.fac3.r <-
+  reverse.code(in.fac3.key,
+               in.fac3.raw,
+               mini = 1,
+               maxi = 7)
+
+in.fac3.df <- as.data.frame(in.fac3.r)
+
+# Item analysis
+
+# psych::alpha(in.fac3.df, check.keys = TRUE)
+
+Invisibility3 <-
+  multicon::composite(in.fac3.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+When I think about violence against women, Native women do not come to mind 
+```{r}
+# Higher = more invisible
+summary(data$IN_Violence)
+Violence <- as.data.frame(data$IN_Violence)
+
+```
+
+
+# Knowledge about Sovereignty
+
+* Sovereignty Items
+  + Native American tribes create and enforce their own rules, policies, and laws on reservations.
+  + Native American tribes manage their own police forces.
+  + Native American tribes determine the nature/structure of their own government without interference from U.S. or state governments.
+  + Native American tribes are self-governing, autonomous nations within the United States.
+  + Native American tribes do not have control over their own judicial and legal systems.
+  + Native American tribal police do not have jurisdiction over all people who reside on or are located on their reservation.
+  + Native Americans tribes rely on the U.S. government to function as a nation.
+```{r}
+# Higher values = more knowledge about sovereignty
+
+sov.raw <- data %>%
+  dplyr::select(
+    Sov_Rules,
+    Sov_Legal,
+    Sov_Police,
+    Sov_Gov,
+    Sov_Auto,
+    Sov_Rely,
+    Sov_Jurisdiction)
+
+sov.key <- c(1, -1, 1, 1,
+             1, -1, -1)
+
+sov.r <- reverse.code(sov.key,
+                      sov.raw,
+                      mini = 1,
+                      maxi = 7)
+
+sov.df <- as.data.frame(sov.r)
+
+# psych::alpha(sov.df, check.keys = TRUE)
+
+Sovereignty <-
+  multicon::composite(sov.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+```
+
+# Racism Minimization
+```{r}
+# Higher values = Greater denial of racism
+
+racemini.raw <- data %>%
+  dplyr::select(
+    RacismMini_1,
+    RacismMini_2,
+    RacismMini_3,
+    RacismMini_4,
+    RacismMini_5,
+    RacismMini_6,
+    RacismMini_7,
+    RacismMini_8,
+    RacismMini_9,
+    RacismMini_10
+    )
+
+racemini.key <- c(1, -1, 1, -1, -1,
+                  -1, -1, 1, 1, 1)
+
+racemini.r <- reverse.code(racemini.key,
+                           racemini.raw,
+                           mini = 1,
+                           maxi = 7)
+
+racemini.df <- as.data.frame(racemini.r)
+
+RaceMini <-
+  multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
+
+# psych::alpha(racemini.df, check.keys = TRUE)
+
+```
+
+# Cultural Racism
+```{r}
+# Higher values = More cultural racism
+
+culturalracism.raw <- data %>%
+  dplyr::select(
+    CulturalRacism_1,
+    CulturalRacism_2,
+    CulturalRacism_3,
+    CulturalRacism_4,
+    CulturalRacism_5,
+    CulturalRacism_6,
+    CulturalRacism_7,
+    CulturalRacism_8,
+    CulturalRacism_9,
+    CulturalRacism_10,
+    CulturalRacism_11,
+    CulturalRacism_12,
+    CulturalRacism_13
+    )
+
+culrac.key <- c(1, 1, 1, 1, -1,
+                -1, 1, 1, 1, 1,
+                1, 1, 1)
+
+culturalracism.r <- reverse.code(culrac.key,
+                                 culturalracism.raw,
+                                 mini = 1,
+                                 maxi = 7)
+
+culturalracism.df <- as.data.frame(culturalracism.r)
+
+# psych::alpha(culturalracism.df, check.keys = TRUE)
+
+CulturalRacism <-
+  multicon::composite(culturalracism.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+# Native Dehumanization
+```{r}
+# Higher values = greater dehumanization
+
+ntvdehum.raw <- data %>%
+  dplyr::select(NtvDehum_1,
+                NtvDehum_2,
+                NtvDehum_3,
+                NtvDehum_4,
+                NtvDehum_5,
+                NtvDehum_6,
+                NtvDehum_7,
+                NtvDehum_8)
+
+ntvdehum.key <- c(1, 1, 1, 1, -1,
+                1, 1, 1)
+
+ntvdehum.r <- reverse.code(ntvdehum.key,
+                                 ntvdehum.raw,
+                                 mini = 0,
+                                 maxi = 100)
+
+ntvdehum.df <- as.data.frame(ntvdehum.r)
+
+# psych::alpha(ntvdehum.df, check.keys = TRUE)
+
+NtvDehuman <-
+  multicon::composite(ntvdehum.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+# White Dehumanization
+```{r}
+# Higher values = More dehumanization
+
+whitedehum.raw <- data %>%
+  dplyr::select(
+    WhiteDehuman_1,
+    WhiteDehuman_2,
+    WhiteDehuman_3,
+    WhiteDehuman_4,
+    WhiteDehuman_5,
+    WhiteDehuman_6,
+    WhiteDehuman_7,
+    WhiteDehuman_8
+    )
+whitedehum.key <- c(1, 1, 1, 1, -1,
+                1, 1, 1)
+
+whitedehum.r <- reverse.code(whitedehum.key,
+                                 whitedehum.raw,
+                                 mini = 0,
+                                 maxi = 100)
+
+whitedehum.df <- as.data.frame(whitedehum.r)
+
+WhiteDehuman <-
+  multicon::composite(whitedehum.df,
+  rel = TRUE,
+  nomiss = 0.6)
+
+# psych::alpha(whitedehum.df)
+```
+
+# Native Feelings thermometer
+```{r}
+
+summary(data$NtvFeelings_31)
+
+Ntvfeeling <- as.data.frame(data$NtvFeelings_31)
+
+```
+
+# White Feelings Thermometer
+```{r}
+
+summary(data$White_thermo_31)
+
+Whitefeeling <- as.data.frame(data$White_thermo_31) 
+
+```
+
+# ASI
+```{r}
+# Higher values = more sexism
+
+asi.raw <- data %>%
+  dplyr::select(
+    ASI_1,
+    ASI_2,
+    ASI_3,
+    ASI_4,
+    ASI_5,
+    ASI_6,
+    ASI_7,
+    ASI_8,
+    ASI_9,
+    ASI_10,
+    ASI_11,
+    ASI_12,
+    ASI_13,
+    ASI_14,
+    ASI_15,
+    ASI_16,
+    ASI_17,
+    ASI_18,
+    ASI_19,
+    ASI_20,
+    ASI_21,
+    ASI_22
+    )
+
+asi.key <- c(1, 1, 1, 1, 1,
+             -1, -1, 1, -1, 1,
+             1, 1, 1, 1, -1,
+             1, 1, 1, 1, -1,
+             1, -1)
+
+asi.r <- reverse.code(asi.key,
+                      asi.raw,
+                      mini = 1,
+                      maxi = 7)
+
+asi.df <- as.data.frame(asi.r)
+
+# psych::alpha(asi.df)
+
+# Overall ASI score
+ASI <- multicon::composite(asi.df, rel=TRUE, nomiss = 0.6)
+```
+
+## Hostile Sexism
+```{r}
+# Higher values = more hostile sexism
+
+host.raw <- data %>%
+  dplyr::select(
+    ASI_1,
+    ASI_2,
+    ASI_3,
+    ASI_4,
+    ASI_5,
+    ASI_6,
+    ASI_7,
+    ASI_8,
+    ASI_9,
+    ASI_10,
+    ASI_11
+    )
+
+host.key <- c(1, 1, 1, 1, 1,
+             -1, -1, 1, -1, 1, 1)
+
+host.r <- reverse.code(host.key,
+                       host.raw,
+                       mini= 1,
+                       maxi = 7)
+
+host.df <- as.data.frame(host.r)
+
+
+Hostile <- multicon::composite(host.df, rel = TRUE, nomiss = 0.6)
+
+```
+
+## Benevolent Sexism
+```{r}
+# Higher values = more benevolent sexism
+
+ben.raw <- data %>%
+  dplyr::select(
+    ASI_12,
+    ASI_13,
+    ASI_14,
+    ASI_15,
+    ASI_16,
+    ASI_17,
+    ASI_18,
+    ASI_19,
+    ASI_20,
+    ASI_21,
+    ASI_22
+    )
+
+ben.key <- c(1, 1, 1, -1,
+             1, 1, 1, 1, -1,
+             1, -1)
+
+ben.r <- reverse.code(ben.key,
+                      ben.raw,
+                      mini=1,
+                      maxi=7)
+
+ben.df <- as.data.frame(ben.r)
+
+
+Benevolent <- multicon::composite(ben.df, rel = TRUE, nomiss = 0.6)
+
+```
+
+# Correlations
+
+## Victim Blaming 
+```{r, results='asis'}
+
+VicBlame.df <- data.frame(VictimBlaming, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence)
+
+corstars(VicBlame.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(VicBlame.df, result = "html"),useViewer=TRUE))
+
+```
+
+## External Factors
+
+```{r, results='asis'}
+ExternalFactors.df <- data.frame(ExternalFactors, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence)
+
+corstars(ExternalFactors.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(ExternalFactors.df, result = "html"),useViewer=TRUE))
+
+```
+
+## Community Blame 
+
+```{r, results='asis'}
+CommBlame.df <- data.frame(CommunityBlame, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence)
+
+corstars(CommBlame.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(CommBlame.df, result = "html"),useViewer=TRUE))
+```
+
+## Support
+
+```{r, results='asis'}
+Support.df <- data.frame(Support, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence)
+
+corstars(Support.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(Support.df, result = "html"),useViewer=TRUE))
+```
+
+## Familiarity with MMIWG
+
+```{r, results='asis'}
+MMIWG.df <- data.frame(MMIWG, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence)
+
+corstars(MMIWG.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(MMIWG.df, result = "html"),useViewer=TRUE))
+```
+
+## Familiarity with MeToo
+
+```{r, results='asis'}
+MeToo.df <- data.frame(MeToo, Benevolent, Hostile, LibCon, Age)
+
+corstars(MeToo.df, result = "html")
+
+# print(htmlTable::htmlTable(corstars(MeToo.df, result = "html"),useViewer=TRUE))
+```
+
+# Tested Research Questions
+
+How does the misunderstanding about Native people contribute to the epidemic of MMIWG?
+
+1. How does misunderstanding about Native people contribute to victim blaming of MMIWG?
+* When we add in cultural racism, invisibility is no longer significant - is there overlap in variability?
+
+```{r}
+
+VicBlame <- data.frame(VictimBlaming, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+
+victimblame.model <- lm(VictimBlaming ~ 1 + Invisibility + RaceMini + Violence + Sovereignty + MMIWG, data = VicBlame)
+
+summary(victimblame.model)
+
+```
+
+
+2. How does the misunderstanding about Native people contribute to taking into consideration external factors? 
++ Not that great, model accounts for only 10% of variability
+```{r}
+
+ExternFactor <- data.frame(ExternalFactors, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+
+externalfactors.model <- lm(ExternalFactors ~ 1 + Invisibility + RaceMini + Violence + MMIWG, data = ExternFactor)
+
+summary(externalfactors.model)
+
+```
+
+3. How does misunderstanding about Native people contribute to blaming the community for MMIWG?
+```{r}
+
+Commblame <- data.frame(CommunityBlame, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+
+commblame.model <- lm(CommunityBlame ~ 1 + Invisibility + RaceMini + Violence + MMIWG, data = Commblame)
+
+summary(commblame.model)
+
+# Not that great, model accounts for only 10% of variability
+
+```
+
+4. How does misunderstanding about Native people contribute to support to end MMIWG?
+* Racism minimization and knowledge about MMIWG, consistenly holding through each model 
+* How do we think about invisibility and racism minization? Are they actually independent? 
+```{r}
+Supp <- data.frame(Support, Invisibility, Invisibility1, Invisibility2, Invisibility3, CulturalRacism, RaceMini, NtvDehuman, Sovereignty, Ntvfeeling, Benevolent, Hostile, LibCon, Age, Violence, MMIWG)
+
+support.model <- lm(Support ~ 1 + Invisibility + RaceMini + Violence + MMIWG, data = Supp)
+
+summary(support.model)
+```
+
+How does prejudice and racism towards Native people contribute to the epedemic of MMIWG?
+
+1. How does prejudice and racism towards Native people contribute to victim blaming?
+* Cultural Racism predicts victim blaming 
+```{r}
+vic.prej <- data.frame(VictimBlaming, CulturalRacism, NtvDehuman, data$NtvFeelings_31)
+
+vic.prej.model <- lm(VictimBlaming ~ 1 + CulturalRacism + NtvDehuman + data$NtvFeelings_31, data = vic.prej)
+
+summary(vic.prej.model)
+```
+
+2. How does prejudice and racism towards Native people contribute to taking into consideration external factors? 
+* The more you dehumanize Natives, the more you take into consideration external factors - does not make sense
+* R squared is only .031, not the best model - only accounting for 3% of variance 
+```{r}
+extern.prej <- data.frame(ExternalFactors, CulturalRacism, NtvDehuman, data$NtvFeelings_31)
+
+extern.prej.model <- lm(ExternalFactors ~ 1 + CulturalRacism + NtvDehuman + data$NtvFeelings_31, data = vic.prej)
+
+summary(extern.prej.model)
+```
+
+3. How does prejudice and racism towards Native people contribute to blaming the community? 
+* 
+```{r}
+commblame.prej <- data.frame(CommunityBlame, CulturalRacism, NtvDehuman, data$NtvFeelings_31)
+
+commblame.prej.model <- lm(CommunityBlame ~ 1 + CulturalRacism + NtvDehuman + data$NtvFeelings_31, data = commblame.prej)
+
+summary(commblame.prej.model)
+```
+
+4. How does prejudice and racism towards Native people contribute to support to end MMIWG? 
+* 
+```{r}
+supp.prej <- data.frame(Support, CulturalRacism, NtvDehuman, data$NtvFeelings_31)
+
+supp.prej.model <- lm(Support ~ 1 + CulturalRacism + NtvDehuman + data$NtvFeelings_31, data = supp.prej)
+
+summary(supp.prej.model)
+```
+
+
+How do broadly held sexist views contribute to the epidemic of MMIWG? How does this compare with knowledge about MeToo? 
+1. How do sexist attitudes contribute to victim blaming of MMIWG?
+
+```{r}
+vicblame.sexism <- data.frame(VictimBlaming, ASI, Benevolent, Hostile)
+
+vicblame_sexism_model <- lm(VictimBlaming ~ 1 + Benevolent + Hostile, data = vicblame.sexism)
+
+summary(vicblame_sexism_model)
+```
+2. How do sexist attitudes contribute to consideration of external factors impacting MMIWG? 
+```{r}
+extern.sexism <- data.frame(ExternalFactors, ASI, Benevolent, Hostile)
+
+extern_sexism_model <- lm(ExternalFactors ~ 1 + Benevolent + Hostile, data = extern.sexism)
+
+summary(extern_sexism_model)
+```
+3. How do sexist attitudes contribute to blaming Native communities for MMIWG? 
+
+```{r}
+commblame.sexism <- data.frame(CommunityBlame, ASI, Benevolent, Hostile)
+
+commblame_sexism_model <- lm(CommunityBlame ~ 1 + Benevolent + Hostile, data = commblame.sexism)
+
+summary(commblame.prej.model)
+```
+
+4. How do sexist attitudes impact support to end MMIWG?
+
+```{r}
+supp_sexism <- data.frame(Support, ASI, Benevolent, Hostile, MMIWG, MeToo)
+
+support_sexism_model <- lm(Support ~ 1 + Benevolent + Hostile, data = supp_sexism)
+
+summary(support_sexism_model)
+
+MeToo_sexism_model <- lm(MeToo ~ 1 + ASI, data = supp_sexism)
+
+summary(MeToo_sexism_model)
+
+MMIWG_sexism_model <- lm(MMIWG ~ 1 + ASI, data = supp_sexism)
+
+summary(MMIWG_sexism_model)
+```
+
+4. How do broadly held sexist views contribute to knowledge of MeToo?
+
+```{r}
+MeToo_sexism <- data.frame(data$MeToo, ASI, Benevolent, Hostile)
+
+MeToo_sexism_model <- lm(data$MeToo ~ 1 + Benevolent + Hostile, data = MeToo_sexism)
+
+summary(MeToo_sexism_model)
+```
+
+# Mediation Analysis 
+
+Invisibility
+```{r}
+allvars <- data.frame(Invisibility, RaceMini, Violence, Sovereignty, ASI, Benevolent, Hostile, VictimBlaming, CommunityBlame, ExternalFactors, Invisibility1, Invisibility2, Invisibility3, Support, WhiteDehuman)
+
+mod.invisibility <- mediate(Support ~ Invisibility + (VictimBlaming) + (ExternalFactors), data = allvars)
+
+summary(mod.invisibility)
+
+```
+
+Racism Minimization
+```{r}
+mod.racemini <- mediate(Support ~ RaceMini + (VictimBlaming) + (ExternalFactors), data = allvars)
+
+summary(mod.racemini)
+
+```
+
+Violence 
+```{r}
+mod.violence <- mediate(Support ~ Violence + (VictimBlaming) + (CommunityBlame) + (ExternalFactors), data = allvars)
+
+summary(mod.violence)
+```
+
+Knowledge about MMIWG
+```{r}
+mod.mmiwg <- mediate(Support ~ MMIWG + (VictimBlaming) + (CommunityBlame) + (ExternalFactors), data = allvars)
+
+summary(mod.mmiwg)
+
+```
+
+Sovereignty 
+```{r}
+mod.sov <- mediate(Support ~ Sovereignty + (VictimBlaming) + (CommunityBlame) + (ExternalFactors), data = allvars)
+
+summary(mod.sov)
+
+
+corr.test(allvars$VictimBlaming, allvars$CommunityBlame)
+```
+
+```{r}
+vars <- data.frame(VictimBlaming, ExternalFactors, WhiteDehuman, Support)
+
+whitedehuman.sov <- mediate(Support ~ WhiteDehuman + (VictimBlaming) + (ExternalFactors), data = allvars)
+
+summary(whitedehuman.sov)
+
+dehum.support <- lm(Support ~ WhiteDehuman, data = vars)
+
+summary(dehum.support)
+
+dehum.invisibility <- lm(WhiteDehuman ~ Invisibility, data = vars)
+
+dehum.invisibility <- lm(Invisibility ~ WhiteDehuman, data = vars)
+
+summary(dehum.invisibility)
+
+dehum.vicblame <- lm(VictimBlaming ~ WhiteDehuman, data = vars)
+summary(dehum.vicblame)
+
+dehum.structural <- lm(ExternalFactors ~ WhiteDehuman, data = vars)
+summary(dehum.structural)
+```
+
+```{r}
+sup.invisibility <- lm(Support ~ Invisibility, data = vars)
+
+summary(sup.invisibility)
+```
+
+```{r}
+ggplot(data = vars, aes(x = Invisibility, y = Support)) + geom_point() + geom_abline()
+
+ggplot(vars, aes(Invisibility, Support)) + geom_point() + geom_abline()
+```
+
+```{r}
+install.packages("lavaan")
+require(lavaan)
+
+X <- vars$Support
+M1 <- vars$VictimBlaming
+M2 <- vars$ExternalFactors
+Y <- vars$WhiteDehuman
+
+mediate.data <- data.frame(X = X, Y = X, M1 = M1, M2 = M2)
+
+multipleMediation <- '
+    Y ~ b1 * M1 + b2 * M2 + c * X
+    M1 ~ a1 * X
+    M2 ~ a2 * X
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    M1 ~~ M2 
+'
+fit <- sem(model = multipleMediation, data = mediate.data)
+summary(fit)
+
+
+```
+
+
+```{r}
+
+```
+
