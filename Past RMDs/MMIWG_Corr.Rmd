@@ -1,0 +1,202 @@
+---
+title: "Correlations_MMIWG"
+author: "Julisa"
+date: "September 27, 2019"
+output: html_document
+---
+
+# Invisibility correlations
+
+```{r}
+
+in.corr.df <- data.frame(in.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+in1.corr.df <- data.frame(in.fac1.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+in2.corr.df <- data.frame(in.fac2.com, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+in3.corr.df <- data.frame(in.fac3.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(in.corr <- round(cor(in.corr.df),2))
+
+```
+
+```{r}
+(in1.corr <- round(cor(in1.corr.df),2))
+```
+
+```{r}
+(in2.corr <- round(cor(in2.corr.df),2))
+
+```
+
+```{r}
+(in3.corr <- round(cor(in3.corr.df),2))
+
+```
+
+
+
+# Cultural Racism Correlations
+```{r}
+cr.corr.df <- data.frame(culturalracism.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(cr.corr <- round(cor(cr.corr.df),2))
+```
+
+# Racism Mini
+```{r}
+rm.corr.df <- data.frame(racemini.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(rm.corr <- round(cor(rm.corr.df),2))
+```
+
+# Dehumanization
+
+```{r}
+dehum.corr.df <- data.frame(ntvdehum.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(dehum.corr <- round(cor(dehum.corr.df),2))
+```
+
+Soveriegnty 
+```{r}
+sov.corr.df <- data.frame(sov.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(sov.corr <- round(cor(sov.corr.df),2))
+```
+
+Feeling thermometer
+
+```{r}
+therm.corr.df <- data.frame(Ntvfeeling, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(therm.corr <- round(cor(therm.corr.df),2))
+```
+
+ASI
+```{r}
+asi.corr.df <- data.frame(asi.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(asi.corr <- round(cor(asi.corr.df),2))
+
+
+```
+
+```{r}
+host.corr.df <- data.frame(host.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(host.corr <- round(cor(host.corr.df),2))
+```
+
+```{r}
+ben.corr.df <- data.frame(ben.comp, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(ben.corr <- round(cor(ben.corr.df),2))
+```
+
+Lib/con
+
+```{r}
+libcon.corr.df <- data.frame(libcon.df, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(libcon.corr <- round(cor(libcon.corr.df),2))
+```
+
+```{r}
+age.corr.df <- data.frame(age.df, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(age.corr <- round(cor(age.corr.df),2))
+```
+
+violence
+
+```{r}
+violence.corr.df <- data.frame(violence.df, att.comp, vicblame.comp, externfactors.comp, commblame.comp, sup.comp)
+
+(violence.corr <- round(cor(violence.corr.df),2))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Attitudes and Beliefs 
+
+```{r}
+att.corr.df <- data.frame(att.comp, in.comp, in.fac1.comp, in.fac2.comp, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+attitudes <- data.frame(att.comp, in.comp, culturalracism.comp, racemini.comp)
+
+apa.cor.table(attitudes, landscape = TRUE, table.number = 1)
+
+(att.corr <- corr.test(att.corr.df, use = "pairwise.complete.obs"))
+
+install.packages("xtable")
+library(xtable)
+
+install.packages("apaTables")
+
+library(apaTables)
+
+
+```
+
+Victim Blaming 
+```{r}
+vic.corr.df <- data.frame(vicblame.comp, in.comp, in.fac1.comp, in.fac2.com, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+(victimblaming <- round(corr.test(vic.corr.df, use = "pairwise.complete.obs"),2))
+```
+
+External Factors
+```{r}
+extern.corr.df <- data.frame(externfactors.comp, in.comp, in.fac1.comp, in.fac2.com, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+(externalfactors <- round(corr.test(extern.corr.df, use = "pairwise.complete.obs"),2))
+```
+
+Community Blame
+```{r}
+comm.corr.df <- data.frame(commblame.comp, in.comp, in.fac1.comp, in.fac2.com, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+(communityblame <- round(corr.test(comm.corr.df,  use = "pairwise.complete.obs"),2))
+```
+
+Support
+```{r}
+sup.corr.df <- data.frame(sup.comp, in.comp, in.fac1.comp, in.fac2.com, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+(support <- round(corr.test(sup.corr.df, use = "pairwise.complete.obs"),2))
+```
+
+Familiarity with MMIWG
+```{r}
+familiar.corr.df <- data.frame(data$MMIWG, in.comp, in.fac1.comp, in.fac2.com, in.fac3.comp, culturalracism.comp, racemini.comp, ntvdehum.comp, sov.comp, ntvdehum.comp, Ntvfeeling, asi.comp, ben.comp, host.comp, libcon.df, age.df, violence.df)
+
+(familiar.mmiwg <- round(corr.test(familiar.corr.df, use = "pairwise.complete.obs"),2))
+
+```
+
+Familiar with MeToo
+```{r}
+metoo.corr.df <- data.frame(data$MeToo, asi.comp, ben.comp, host.comp, libcon.df, age.df)
+
+(familiar.metoo <- round(corr.test(metoo.corr.df, use = "pairwise.complete.obs"),2))
+
+```
+
+
+
