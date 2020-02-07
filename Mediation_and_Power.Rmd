@@ -166,6 +166,8 @@ Support <-
 ## Invisibility Mediation Model 
 ```{r Invisibility Mediation Model}
 
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility)
+
 X <- var$Support
 M1 <- var$VictimBlaming
 M2 <- var$StructuralForces
