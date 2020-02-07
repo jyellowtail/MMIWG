@@ -166,7 +166,7 @@ Support <-
 ## Invisibility Mediation Model 
 ```{r Invisibility Mediation Model}
 
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility)
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
 X <- var$Support
 M1 <- var$VictimBlaming
@@ -219,13 +219,16 @@ summary(rm.fit)
 
 ```
 
-# Power Analysis 
+# Prep for Power Analysis 
+
+## Correlations needed for Power Analysis
 ```{r Prep for Power analysis}
 var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
 (corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
 ```
 
+## Link to Power Analysis Calculator in Code Below
 ```{r Power Analysis Calculator}
 # runGitHub("mc_power_med", "schoam4") 
 # this code takes you to site for power analysis calculator
