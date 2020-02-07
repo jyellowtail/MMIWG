@@ -1,0 +1,221 @@
+---
+title: "Power Analysis & Mediation"
+author: "Julisa"
+date: "2/7/2020"
+output: html_document
+---
+
+```{r libraries_and_dataset}
+
+library(here) #collaboration
+library(rio) #import data
+library(tidyverse) #Tidy data
+library(janitor) #clean-up variables
+library(pwr) #power analysis
+library(psych) #recoding variables
+#install.packages("lavaan")
+#install.packages("pwr")
+require(lavaan) #mediation model
+library(dplyr)
+library(shiny) # power analysis 
+
+data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
+
+```
+
+```{r select_variables}
+
+#Select variables of interest and filter for White respondents
+
+data_tidy <- data %>%
+  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
+  clean_names() 
+
+data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
+
+# Not filtering for race for this analysis but if we wanted to, code is below
+# %>% filter(race == "3") 
+
+
+```
+
+Invsibility
+```{r invisibility_composite}
+# Higher values = greater invisibility
+
+data.in <- data_tidy %>%
+  dplyr::rename(ntv_invisibility_7 = invisibility1_13,
+         ntv_invisibility_8 = invisibility1_14,
+         ntv_invisibility_9 = invisibility1_15,
+         ntv_invisibility_10 = invisibility1_16,
+         ntv_invisibility_11 = invisibility1_17,
+         ntv_invisibility_12 = invisibility1_18)
+
+in.raw <- data.in %>%
+  dplyr::select(
+    ntv_invisibility_1:ntv_invisibility_12)
+
+in.key <- c(1, -1, 1, 1,
+           1, 1, 1, -1,
+           1, 1, 1, 1)
+
+in.r <-
+  reverse.code(in.key,
+               in.raw,
+               mini = 1,
+               maxi = 7)
+
+invisibility.df <- as.data.frame(in.r)
+
+#Item Analysis:
+# psych::alpha(in.df, check.keys = TRUE)
+
+Invisibility <-
+  multicon::composite(invisibility.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+Racism Minimization
+```{r race_mini_composite}
+racemini.raw <- data_tidy %>%
+  dplyr::select(
+    racism_mini_1:racism_mini_10)
+
+racemini.key <- c(1, -1, 1, -1, -1,
+                  -1, -1, 1, 1, 1)
+
+racemini.r <- reverse.code(racemini.key,
+                           racemini.raw,
+                           mini = 1,
+                           maxi = 7)
+
+racemini.df <- as.data.frame(racemini.r)
+
+RaceMini <-
+  multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
+
+```
+
+Victim Blaming
+```{r vic_blame_composite}
+vicblame.raw <- data_tidy %>%
+  dplyr::select(
+    ab_activists,
+    ab_sex_work,
+    ab_rez,
+    ab_runaways,
+    ab_drug,
+    ab_criminal
+    )
+
+#Took out the key and reverse coding since the direction did not change for any of these values. 
+
+vicblame.df <- as.data.frame(vicblame.raw)
+
+VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
+```
+
+Structural Forces
+```{r structural_forces_composite}
+structuralforces.raw <- data_tidy %>%
+  dplyr::select(
+    ab_non_native_pers,
+    ab_citizens,
+    ab_male_worker,
+    ab_tribal_police,
+    ab_laws,
+    ab_society
+    )
+
+structuralforces.key <- c(1, 1, 1, 1, 1, -1)
+
+structuralforces.r <- reverse.code(structuralforces.key,
+                                structuralforces.raw,
+                                mini=1,
+                                maxi=7)
+
+structuralforces.df <- as.data.frame(structuralforces.r)
+
+StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
+```
+
+Support
+```{r support_composite}
+# Higher values = more support
+sup <- data_tidy %>%
+  dplyr::select(sup_hash:sup_training)
+
+sup.df <- as.data.frame(sup)
+
+# psych::alpha(sup.df, check.keys = TRUE)
+
+Support <-
+  multicon::composite(sup.df,
+  rel = TRUE,
+  nomiss = 0.6)
+```
+
+Power Analysis 
+```{r Prep for Power analysis}
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
+
+(corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
+```
+
+```{r Power Analysis}
+runGitHub("mc_power_med", "schoam4") # run power analysis here
+```
+
+Mediation Analysis
+```{r Invisibility Mediation Model}
+
+X <- var$Support
+M1 <- var$VictimBlaming
+M2 <- var$StructuralForces
+Y <- var$Invisibility
+
+in.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
+
+
+
+in.multipleMediation <- '
+    Y ~ b1 * M1 + b2 * M2 + c * X
+    M1 ~ a1 * X
+    M2 ~ a2 * X
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    M1 ~~ M2 
+'
+
+in.fit <- sem(model = in.multipleMediation, data = in.mediate.data)
+summary(in.fit)    
+
+```
+
+```{r Racism Minimization Mediation Model}
+
+X <- var$Support
+M1 <- var$VictimBlaming
+M2 <- var$StructuralForces
+Y <- var$RaceMini
+
+rm.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
+
+
+
+rm.multipleMediation <- '
+    Y ~ b1 * M1 + b2 * M2 + c * X
+    M1 ~ a1 * X
+    M2 ~ a2 * X
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    M1 ~~ M2 
+'
+
+rm.fit <- sem(model = rm.multipleMediation, data = rm.mediate.data)
+summary(rm.fit)    
+
+```
