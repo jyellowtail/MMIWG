@@ -13,13 +13,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r libraries_and_dataset}
 
-library(here)
-library(rio)
-library(tidyverse)
-library(janitor)
-library(pwr)
-library(psych)
+library(here) #collaboration
+library(rio) #import data
+library(tidyverse) #Tidy data
+library(janitor) #clean-up variables
+library(pwr) #power analysis
+library(psych) #recoding variables
+#install.packages("lavaan")
 #install.packages("pwr")
+require(lavaan) #madiation model
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
@@ -39,8 +41,6 @@ data_tidy <- data %>%
 ```
 
 ```{r descriptive_statistics}
-
-
 #Age statistics
 mean_age <- mean(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
 sd_age <- sd(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
@@ -60,9 +60,9 @@ other <- percent_ethn(6)
 
 #Gender 
 percent_gen <- function(pos){
-  paste(((table(data$Gender)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
+  paste(((table(data_tidy$Gender)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
 female <- percent_gen(1)
-male <- percent_gen(2) ##### This is wrong! Will come back to ir#####
+male <- percent_gen(2) ##### This is wrong! Will come back to it
 
 
 ```
@@ -71,7 +71,6 @@ male <- percent_gen(2) ##### This is wrong! Will come back to ir#####
 # Support for ending MMIWG (5 point) Composite
 ```{r support_composite}
 # Higher values = more support
-
 sup <- data_tidy %>%
   dplyr::select(sup_hash:sup_training)
 
@@ -83,7 +82,6 @@ Support <-
   multicon::composite(sup.df,
   rel = TRUE,
   nomiss = 0.6)
-
 ```
 
 #Invisibility Scale Composite
@@ -114,20 +112,19 @@ in.r <-
 
 invisibility.df <- as.data.frame(in.r)
 
-# Item analysis
-
+#Item Analysis:
 # psych::alpha(in.df, check.keys = TRUE)
 
 Invisibility <-
   multicon::composite(invisibility.df,
   rel = TRUE,
   nomiss = 0.6)
-
 ```
 
 # Attitudes and Beliefs (3 Factors)
 
 1. Victim Blaming (7-point scale)
+_Higher scores indicate more victim blaming_
 + MMIWG are not as big of a problem as activists would like people to think.
 + MMIWG were involved in sex work.
 + MMIWG only takes place on the reservation.
@@ -162,7 +159,6 @@ _Higher scores take into account more structural forces_
 + Policies and laws that make it difficult to prosecute Non-native offenders contribute to the epidemic of MMIWG.
 + Native women are murdered and go missing because U.S. society does not value Native women.
 ```{r structural_forces_composite}
-
 structuralforces.raw <- data_tidy %>%
   dplyr::select(
     ab_non_native_pers,
@@ -186,11 +182,12 @@ StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=
 ```
 
 Racism Minimization
+_Higher scores indicate more racism minimization_
++ Enter Racism Minimization items
 ```{r race_mini_composite}
 racemini.raw <- data_tidy %>%
   dplyr::select(
-    racism_mini_1:racism_mini_10
-    )
+    racism_mini_1:racism_mini_10)
 
 racemini.key <- c(1, -1, 1, -1, -1,
                   -1, -1, 1, 1, 1)
@@ -206,30 +203,14 @@ RaceMini <-
   multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
 ```
 
-#Linear models
-```{r}
-Supp <- data.frame(Support, Invisibility, MMIWG)
 
-support.model <- lm(Support ~ 1 + Invisibility, data = Supp)
+```{r }
+var <- as.data.frame(Support, VictimBlaming, StructuralForces, Invisibility)
 
-summary(support.model)
-```
-
-```{r}
-knowledge.model <- lm(Support ~ 1 + MMIWG, data = Supp)
-
-summary(knowledge.model)
-```
-
-
-```{r}
-install.packages("lavaan")
-require(lavaan)
-
-X <- vars$Support
-M1 <- vars$VictimBlaming
-M2 <- vars$ExternalFactors
-Y <- vars$WhiteDehuman
+X <- var$Support
+M1 <- var$VictimBlaming
+M2 <- var$StructuralForces
+Y <- var$Invisibility
 
 mediate.data <- data.frame(X = X, Y = X, M1 = M1, M2 = M2)
 
@@ -244,6 +225,23 @@ multipleMediation <- '
 '
 fit <- sem(model = multipleMediation, data = mediate.data)
 summary(fit)
-
-
 ```
+
+
+#Linear models
+
+```{r}
+knowledge.model <- lm(Support ~ 1 + MMIWG, data = Supp)
+
+summary(knowledge.model)
+```
+
+
+```{r}
+Supp <- data.frame(Support, Invisibility, MMIWG)
+
+support.model <- lm(Support ~ 1 + Invisibility, data = Supp)
+
+summary(support.model)
+```
+
