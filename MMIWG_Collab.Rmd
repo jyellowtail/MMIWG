@@ -83,10 +83,9 @@ sup.df <- as.data.frame(sup)
 
 # psych::alpha(sup.df, check.keys = TRUE)
 
-Support <-
-  multicon::composite(sup.df,
+data_tidy <- mutate(data_tidy, Support = (multicon::composite(sup.df,
   rel = TRUE,
-  nomiss = 0.6)
+  nomiss = 0.6)))
 ```
 
 Invsibility
@@ -120,10 +119,9 @@ invisibility.df <- as.data.frame(in.r)
 #Item Analysis:
 # psych::alpha(in.df, check.keys = TRUE)
 
-Invisibility <-
-  multicon::composite(invisibility.df,
+data_tidy <- mutate(data_tidy, Invsibility = (multicon::composite(invisibility.df,
   rel = TRUE,
-  nomiss = 0.6)
+  nomiss = 0.6)))
 ```
 
 Victim Blaming
@@ -142,7 +140,10 @@ vicblame.raw <- data_tidy %>%
 
 vicblame.df <- as.data.frame(vicblame.raw)
 
-VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
+data_tidy <- mutate(data_tidy, VictimBlaming = (multicon::composite(vicblame.df,
+  rel = TRUE,
+  nomiss = 0.6)))
+
 ```
 
 Structural Forces
@@ -166,7 +167,9 @@ structuralforces.r <- reverse.code(structuralforces.key,
 
 structuralforces.df <- as.data.frame(structuralforces.r)
 
-StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
+data_tidy <- mutate(data_tidy, StructuralForces = (multicon::composite(structuralforces.df,
+  rel = TRUE,
+  nomiss = 0.6)))
 ```
 
 Racism Minimization
@@ -185,10 +188,17 @@ racemini.r <- reverse.code(racemini.key,
 
 racemini.df <- as.data.frame(racemini.r)
 
-RaceMini <-
-  multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
+data_tidy <- mutate(data_tidy, RaceMini = (multicon::composite(racemini.df,
+  rel = TRUE,
+  nomiss = 0.6)))
 
 ```
+
+```{r}
+write.csv(data_tidy,"C:/Users/Julisa/Documents/MMIWG/MMIWG/Data/Data_Tidy.csv", row.names = TRUE)
+```
+
+
 ```{r Prep for Power analysis}
 var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
