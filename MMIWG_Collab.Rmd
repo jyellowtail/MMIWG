@@ -4,7 +4,7 @@ author: "Jamie Yellowtail"
 date: "2/5/2020"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -35,6 +35,8 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 data_tidy <- data %>%
   dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
   clean_names() 
+
+data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
 
 # Not filtering for race for this analysis but if we wanted to, code is below
 # %>% filter(race == "3") 
@@ -204,14 +206,15 @@ racemini.df <- as.data.frame(racemini.r)
 RaceMini <-
   multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
 
-view(RaceMini)
+```
+```{r Prep for Power analysis}
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
+
+(corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
 ```
 
 
-```{r }
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
-
-(corr <- round(cor(var),2))
+```{r Mediation Model}
 
 X <- var$Support
 M1 <- var$VictimBlaming
