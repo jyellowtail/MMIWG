@@ -22,9 +22,9 @@ library(psych) #recoding variables
 #install.packages("lavaan")
 #install.packages("pwr")
 require(lavaan) #madiation model
+library(dplyr)
 
 data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
-
 
 ```
 
@@ -33,9 +33,11 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 #Select variables of interest and filter for White respondents
 
 data_tidy <- data %>%
-  select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
-  clean_names() %>%
-  filter(race == "3")
+  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
+  clean_names() 
+
+# Not filtering for race for this analysis but if we wanted to, code is below
+# %>% filter(race == "3") 
 
 
 ```
@@ -201,11 +203,15 @@ racemini.df <- as.data.frame(racemini.r)
 
 RaceMini <-
   multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)
+
+view(RaceMini)
 ```
 
 
 ```{r }
-var <- as.data.frame(Support, VictimBlaming, StructuralForces, Invisibility)
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
+
+(corr <- round(cor(var),2))
 
 X <- var$Support
 M1 <- var$VictimBlaming
