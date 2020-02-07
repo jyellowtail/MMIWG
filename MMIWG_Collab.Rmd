@@ -159,3 +159,30 @@ knowledge.model <- lm(Support ~ 1 + MMIWG, data = Supp)
 
 summary(knowledge.model)
 ```
+
+
+```{r}
+install.packages("lavaan")
+require(lavaan)
+
+X <- vars$Support
+M1 <- vars$VictimBlaming
+M2 <- vars$ExternalFactors
+Y <- vars$WhiteDehuman
+
+mediate.data <- data.frame(X = X, Y = X, M1 = M1, M2 = M2)
+
+multipleMediation <- '
+    Y ~ b1 * M1 + b2 * M2 + c * X
+    M1 ~ a1 * X
+    M2 ~ a2 * X
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    M1 ~~ M2 
+'
+fit <- sem(model = multipleMediation, data = mediate.data)
+summary(fit)
+
+
+```
