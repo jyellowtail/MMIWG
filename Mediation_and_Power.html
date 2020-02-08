@@ -1812,10 +1812,10 @@ Support &lt;-
 <h2><span class="header-section-number">2.1</span> Invisibility Mediation Model</h2>
 <pre class="r"><code>var &lt;- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
-X &lt;- var$Support
+X &lt;- var$Invisibility
 M1 &lt;- var$VictimBlaming
 M2 &lt;- var$StructuralForces
-Y &lt;- var$Invisibility
+Y &lt;- var$Support
 
 in.mediate.data &lt;- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
 
@@ -1833,7 +1833,7 @@ in.multipleMediation &lt;- &#39;
 
 in.fit &lt;- sem(model = in.multipleMediation, data = in.mediate.data)
 summary(in.fit)    </code></pre>
-<pre><code>## lavaan 0.6-5 ended normally after 19 iterations
+<pre><code>## lavaan 0.6-5 ended normally after 18 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
@@ -1856,40 +1856,39 @@ summary(in.fit)    </code></pre>
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
 ##   Y ~                                                 
-##     M1        (b1)    0.285    0.041    6.925    0.000
-##     M2        (b2)    0.042    0.086    0.491    0.623
-##     X          (c)   -0.087    0.060   -1.462    0.144
+##     M1        (b1)   -0.091    0.044   -2.061    0.039
+##     M2        (b2)    0.475    0.081    5.845    0.000
+##     X          (c)   -0.087    0.059   -1.462    0.144
 ##   M1 ~                                                
-##     X         (a1)   -0.187    0.082   -2.292    0.022
+##     X         (a1)    0.538    0.074    7.271    0.000
 ##   M2 ~                                                
-##     X         (a2)    0.216    0.039    5.536    0.000
+##     X         (a2)    0.021    0.040    0.525    0.600
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
 ##  .M1 ~~                                               
-##    .M2                0.106    0.050    2.113    0.035
+##    .M2                0.057    0.049    1.177    0.239
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##    .Y                 0.815    0.069   11.832    0.000
-##    .M1                1.747    0.148   11.832    0.000
-##    .M2                0.397    0.034   11.832    0.000
+##    .Y                 0.811    0.069   11.832    0.000
+##    .M1                1.497    0.127   11.832    0.000
+##    .M2                0.440    0.037   11.832    0.000
 ## 
 ## Defined Parameters:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##     indirect1        -0.053    0.025   -2.176    0.030
-##     indirect2         0.009    0.019    0.489    0.625
-##     total            -0.132    0.061   -2.169    0.030</code></pre>
+##     indirect1        -0.049    0.025   -1.983    0.047
+##     indirect2         0.010    0.019    0.523    0.601
+##     total            -0.126    0.058   -2.169    0.030</code></pre>
 </div>
 <div id="racism-minimization-mediation-model" class="section level2">
 <h2><span class="header-section-number">2.2</span> Racism Minimization Mediation Model</h2>
-<pre class="r"><code>X &lt;- var$Support
+<pre class="r"><code>X &lt;- var$RaceMini
 M1 &lt;- var$VictimBlaming
 M2 &lt;- var$StructuralForces
-Y &lt;- var$RaceMini
+Y &lt;- var$Support
 
 rm.mediate.data &lt;- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
 
 
 rm.multipleMediation &lt;- &#39;
@@ -1904,7 +1903,7 @@ rm.multipleMediation &lt;- &#39;
 
 rm.fit &lt;- sem(model = rm.multipleMediation, data = rm.mediate.data)
 summary(rm.fit)    </code></pre>
-<pre><code>## lavaan 0.6-5 ended normally after 20 iterations
+<pre><code>## lavaan 0.6-5 ended normally after 18 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
@@ -1927,30 +1926,30 @@ summary(rm.fit)    </code></pre>
 ## Regressions:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
 ##   Y ~                                                 
-##     M1        (b1)    0.441    0.047    9.483    0.000
-##     M2        (b2)   -0.429    0.098   -4.401    0.000
-##     X          (c)   -0.347    0.067   -5.141    0.000
+##     M1        (b1)    0.003    0.045    0.072    0.943
+##     M2        (b2)    0.327    0.083    3.938    0.000
+##     X          (c)   -0.249    0.048   -5.141    0.000
 ##   M1 ~                                                
-##     X         (a1)   -0.187    0.082   -2.292    0.022
+##     X         (a1)    0.489    0.054    9.001    0.000
 ##   M2 ~                                                
-##     X         (a2)    0.216    0.039    5.536    0.000
+##     X         (a2)   -0.137    0.030   -4.635    0.000
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
 ##  .M1 ~~                                               
-##    .M2                0.106    0.050    2.113    0.035
+##    .M2                0.180    0.046    3.903    0.000
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##    .Y                 1.041    0.088   11.832    0.000
-##    .M1                1.747    0.148   11.832    0.000
-##    .M2                0.397    0.034   11.832    0.000
+##    .Y                 0.746    0.063   11.832    0.000
+##    .M1                1.380    0.117   11.832    0.000
+##    .M2                0.409    0.035   11.832    0.000
 ## 
 ## Defined Parameters:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##     indirect1        -0.083    0.037   -2.228    0.026
-##     indirect2        -0.093    0.027   -3.445    0.001
-##     total            -0.522    0.074   -7.098    0.000</code></pre>
+##     indirect1         0.002    0.022    0.072    0.943
+##     indirect2        -0.045    0.015   -3.001    0.003
+##     total            -0.292    0.041   -7.098    0.000</code></pre>
 </div>
 </div>
 <div id="prep-for-power-analysis" class="section level1">

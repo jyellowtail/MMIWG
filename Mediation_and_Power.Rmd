@@ -168,23 +168,14 @@ Support <-
 
 var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
-X <- var$Invisibility
-M1 <- var$VictimBlaming
-M2 <- var$StructuralForces
-Y <- var$Support
-
-in.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
-
-
 in.multipleMediation <- '
-    Y ~ b1 * M1 + b2 * M2 + c * X
-    M1 ~ a1 * X
-    M2 ~ a2 * X
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * Invisibility
+    VictimBlaming ~ a1 * Invisibility
+    StructuralForces ~ a2 * Invisibility
     indirect1 := a1 * b1
     indirect2 := a2 * b2
     total    := c + (a1 * b1) + (a2 * b2)
-    M1 ~~ M2 
+    VictimBlaming ~~ StructuralForces 
 '
 
 in.fit <- sem(model = in.multipleMediation, data = in.mediate.data)
@@ -195,28 +186,38 @@ summary(in.fit)
 ## Racism Minimization Mediation Model
 ```{r Racism Minimization Mediation Model}
 
-X <- var$RaceMini
-M1 <- var$VictimBlaming
-M2 <- var$StructuralForces
-Y <- var$Support
-
-rm.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
-
 rm.multipleMediation <- '
-    Y ~ b1 * M1 + b2 * M2 + c * X
-    M1 ~ a1 * X
-    M2 ~ a2 * X
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
     indirect1 := a1 * b1
     indirect2 := a2 * b2
     total    := c + (a1 * b1) + (a2 * b2)
-    M1 ~~ M2 
+    VictimBlaming ~~ StructuralForces 
 '
 
-rm.fit <- sem(model = rm.multipleMediation, data = rm.mediate.data)
+rm.fit <- sem(model = rm.multipleMediation, data = var)
 summary(rm.fit)    
 
 ```
+
+## Invisibility to Racism Minimization Mediation Model
+```{r}
+rm.in.multipleMediation <- '
+    RaceMini ~ Invisibility
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    VictimBlaming ~~ StructuralForces 
+'
+
+rm.in.fit <- sem(model = rm.in.multipleMediation, data = var)
+summary(rm.in.fit) 
+```
+
 
 # Prep for Power Analysis 
 
