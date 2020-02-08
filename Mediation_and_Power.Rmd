@@ -168,10 +168,10 @@ Support <-
 
 var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
-X <- var$Support
+X <- var$Invisibility
 M1 <- var$VictimBlaming
 M2 <- var$StructuralForces
-Y <- var$Invisibility
+Y <- var$Support
 
 in.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
 
@@ -195,13 +195,12 @@ summary(in.fit)
 ## Racism Minimization Mediation Model
 ```{r Racism Minimization Mediation Model}
 
-X <- var$Support
+X <- var$RaceMini
 M1 <- var$VictimBlaming
 M2 <- var$StructuralForces
-Y <- var$RaceMini
+Y <- var$Support
 
 rm.mediate.data <- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
 
 
 rm.multipleMediation <- '
