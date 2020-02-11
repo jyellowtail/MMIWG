@@ -4,7 +4,7 @@ author: "Jamie Yellowtail"
 date: "2/5/2020"
 output: html_document
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -35,12 +35,12 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
 data_tidy <- data %>%
   dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
-  clean_names() 
+  clean_names() %>%
+  filter(race == "3")
 
 data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
 
-# Not filtering for race for this analysis but if we wanted to, code is below
-# %>% filter(race == "3") 
+ 
 
 
 ```
@@ -50,6 +50,7 @@ data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
 mean_age <- mean(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
 sd_age <- sd(as.numeric(data_tidy$age_r), na.rm = TRUE) %>% round(2)
 r1_age <- min(as.numeric(data_tidy$age_r), na.rm = TRUE)
+r2_age <- max(as.numeric(data_tidy$age_r), na.rm = TRUE)
 n <- nrow(data_tidy)
 
 #Ethnicity
@@ -65,9 +66,9 @@ other <- percent_ethn(6)
 
 #Gender 
 percent_gen <- function(pos){
-  paste(((table(data_tidy$Gender)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
-female <- percent_gen(1)
-male <- percent_gen(2) ##### This is wrong! Will come back to it
+  paste(((table(data_tidy$gender)[[pos]]/n) *100) %>% round(1), "%", sep = "")}
+male <- percent_gen(1)
+female <- percent_gen(2) 
 
 
 ```

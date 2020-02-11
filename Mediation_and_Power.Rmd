@@ -34,7 +34,8 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
 data_tidy <- data %>%
   dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
-  clean_names() 
+  clean_names() %>%
+  filter(race == "3")
 
 data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
 
@@ -178,7 +179,7 @@ in.multipleMediation <- '
     VictimBlaming ~~ StructuralForces 
 '
 
-in.fit <- sem(model = in.multipleMediation, data = in.mediate.data)
+in.fit <- sem(model = in.multipleMediation, data = var)
 summary(in.fit)    
 
 ```
