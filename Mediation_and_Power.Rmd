@@ -206,6 +206,9 @@ summary(rm.fit)
 ```{r}
 rm.in.multipleMediation <- '
     RaceMini ~ Invisibility
+    VictimBlaming ~ Invisibility
+    StructuralForces ~ Invisibility
+    Support ~ Invisibility
     Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
     VictimBlaming ~ a1 * RaceMini
     StructuralForces ~ a2 * RaceMini
