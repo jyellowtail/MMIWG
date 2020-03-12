@@ -80,6 +80,11 @@ Invisibility <-
   multicon::composite(invisibility.df,
   rel = TRUE,
   nomiss = 0.6)
+
+inv.lm <- lm(StructuralForces ~ Invisibility)
+summary(inv.lm)
+
+corr.test(StructuralForces, Invisibility)
 ```
 
 Racism Minimization Composite
@@ -144,6 +149,13 @@ structuralforces.r <- reverse.code(structuralforces.key,
 structuralforces.df <- as.data.frame(structuralforces.r)
 
 StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
+
+view(structuralforces.r)
+
+install.packages("pastecs")
+library(pastecs)
+stat.desc(structuralforces.r)
+
 ```
 
 Support Composite
@@ -181,6 +193,9 @@ in.multipleMediation <- '
 
 in.fit <- sem(model = in.multipleMediation, data = var)
 summary(in.fit)    
+
+in.lm <- lm(Support ~ Invisibility, data = var)
+summary(in.lm)
 
 ```
 
