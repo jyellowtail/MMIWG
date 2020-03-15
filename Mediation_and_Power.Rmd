@@ -44,13 +44,13 @@ summary(duration$`Duration (in seconds)`)
 #Select variables of interest and filter for White respondents
 
 # data_tidy <- data %>%
-#  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, #AB_Activists:AB_Laws) %>%
+#  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
 #  clean_names() %>%
 #  filter(race == "3")
 
 data <- data[-c(1:21), ] # deleted empty rows
 
-view(data)
+data <- data %>% filter(Race == 3)
 
 # Not filtering for race for this analysis but if we wanted to, code is below
 # %>% filter(race == "3") 
@@ -66,23 +66,23 @@ data.in <- data %>%
   dplyr::rename(ntv_invisibility_1 = NtvInvisibility_1,
                 ntv_invisibility_2 = NtvInvisibility_2,
                 ntv_invisibility_3 = NtvInvisibility_3,
-                ntv_invisibility_4 = NtvInvisibility_4,
-                ntv_invisibility_5 = NtvInvisibility_5,
-                ntv_invisibility_6 = NtvInvisibility_6,
-                ntv_invisibility_7 = Invisibility1_13,
-                ntv_invisibility_8 = Invisibility1_14,
-                ntv_invisibility_9 = Invisibility1_15,
-                ntv_invisibility_10 = Invisibility1_16,
-                ntv_invisibility_11 = Invisibility1_17,
-                ntv_invisibility_12 = Invisibility1_18)
+                ntv_invisibility_5 = NtvInvisibility_4,
+                ntv_invisibility_6 = NtvInvisibility_5,
+                ntv_invisibility_7 = NtvInvisibility_6,
+                ntv_invisibility_8 = Invisibility1_13,
+                ntv_invisibility_9 = Invisibility1_14,
+                ntv_invisibility_10 = Invisibility1_15,
+                ntv_invisibility_11 = Invisibility1_16,
+                ntv_invisibility_12 = Invisibility1_17,
+                ntv_invisibility_13 = Invisibility1_18)
 
 in.raw <- data.in %>%
   dplyr::select(
-    ntv_invisibility_1:ntv_invisibility_3, ntv_invisibility_5:ntv_invisibility_12)
+    ntv_invisibility_1:ntv_invisibility_3, ntv_invisibility_5:ntv_invisibility_13)
 
-in.key <- c(1, -1, 1,
-           1, 1, 1, -1,
-           1, 1, 1, 1)
+in.key <- c(1, -1, 1, 1, 1, 
+            1, 1, -1, 1, 1, 
+            1, 1)
 
 in.r <-
   reverse.code(in.key,
@@ -99,18 +99,13 @@ Invisibility <-
   multicon::composite(invisibility.df,
   rel = TRUE,
   nomiss = 0.6)
-
-inv.lm <- lm(StructuralForces ~ Invisibility)
-summary(inv.lm)
-
-corr.test(StructuralForces, Invisibility)
 ```
 
 Racism Minimization Composite
 ```{r race_mini_composite}
-racemini.raw <- data_tidy %>%
+racemini.raw <- data %>%
   dplyr::select(
-    racism_mini_1:racism_mini_10)
+    RacismMini_1:RacismMini_10)
 
 racemini.key <- c(1, -1, 1, -1, -1,
                   -1, -1, 1, 1, 1)
@@ -129,14 +124,14 @@ RaceMini <-
 
 Victim Blaming Composite
 ```{r vic_blame_composite}
-vicblame.raw <- data_tidy %>%
+vicblame.raw <- data %>%
   dplyr::select(
-    ab_activists,
-    ab_sex_work,
-    ab_rez,
-    ab_runaways,
-    ab_drug,
-    ab_criminal
+    AB_Activists,
+    AB_SexWork,
+    AB_Rez,
+    AB_Runaways,
+    AB_Drug,
+    AB_Criminal
     )
 
 #Took out the key and reverse coding since the direction did not change for any of these values. 
@@ -148,40 +143,27 @@ VictimBlaming <- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)
 
 Structural Forces Composite
 ```{r structural_forces_composite}
-structuralforces.raw <- data_tidy %>%
+structuralforces.raw <- data %>%
   dplyr::select(
-    ab_non_native_pers,
-    ab_citizens,
-    ab_male_worker,
-    ab_tribal_police,
-    ab_laws,
-    ab_society
+    AB_NonNative_pers,
+    AB_Citizens,
+    AB_MaleWorker,
+    AB_TribalPolice,
+    AB_Laws,
+    AB_Society
     )
 
-structuralforces.key <- c(1, 1, 1, 1, 1, -1)
-
-structuralforces.r <- reverse.code(structuralforces.key,
-                                structuralforces.raw,
-                                mini=1,
-                                maxi=7)
-
-structuralforces.df <- as.data.frame(structuralforces.r)
+structuralforces.df <- as.data.frame(structuralforces.raw)
 
 StructuralForces <- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)
-
-view(structuralforces.r)
-
-install.packages("pastecs")
-library(pastecs)
-stat.desc(structuralforces.r)
 
 ```
 
 Support Composite
 ```{r support_composite}
 # Higher values = more support
-sup <- data_tidy %>%
-  dplyr::select(sup_hash:sup_training)
+sup <- data %>%
+  dplyr::select(Sup_Hash:Sup_Training)
 
 sup.df <- as.data.frame(sup)
 
