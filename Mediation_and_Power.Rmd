@@ -28,16 +28,29 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
 ```
 
+```{r}
+duration<- import(here("Data", "Duration.csv"), setclass = "tbl_df")
+summary(duration$`Duration (in seconds)`)
+
+499.5/60
+896.1672/60
+1096.5/60
+3625/60
+```
+
+
 ```{r select_variables}
 
 #Select variables of interest and filter for White respondents
 
-data_tidy <- data %>%
-  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
-  clean_names() %>%
-  filter(race == "3")
+# data_tidy <- data %>%
+#  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, #AB_Activists:AB_Laws) %>%
+#  clean_names() %>%
+#  filter(race == "3")
 
-data_tidy <- data_tidy[-c(1:21), ] # deleted empty rows
+data <- data[-c(1:21), ] # deleted empty rows
+
+view(data)
 
 # Not filtering for race for this analysis but if we wanted to, code is below
 # %>% filter(race == "3") 
@@ -49,19 +62,25 @@ Invsibility Composite
 ```{r invisibility_composite}
 # Higher values = greater invisibility
 
-data.in <- data_tidy %>%
-  dplyr::rename(ntv_invisibility_7 = invisibility1_13,
-         ntv_invisibility_8 = invisibility1_14,
-         ntv_invisibility_9 = invisibility1_15,
-         ntv_invisibility_10 = invisibility1_16,
-         ntv_invisibility_11 = invisibility1_17,
-         ntv_invisibility_12 = invisibility1_18)
+data.in <- data %>%
+  dplyr::rename(ntv_invisibility_1 = NtvInvisibility_1,
+                ntv_invisibility_2 = NtvInvisibility_2,
+                ntv_invisibility_3 = NtvInvisibility_3,
+                ntv_invisibility_4 = NtvInvisibility_4,
+                ntv_invisibility_5 = NtvInvisibility_5,
+                ntv_invisibility_6 = NtvInvisibility_6,
+                ntv_invisibility_7 = Invisibility1_13,
+                ntv_invisibility_8 = Invisibility1_14,
+                ntv_invisibility_9 = Invisibility1_15,
+                ntv_invisibility_10 = Invisibility1_16,
+                ntv_invisibility_11 = Invisibility1_17,
+                ntv_invisibility_12 = Invisibility1_18)
 
 in.raw <- data.in %>%
   dplyr::select(
-    ntv_invisibility_1:ntv_invisibility_12)
+    ntv_invisibility_1:ntv_invisibility_3, ntv_invisibility_5:ntv_invisibility_12)
 
-in.key <- c(1, -1, 1, 1,
+in.key <- c(1, -1, 1,
            1, 1, 1, -1,
            1, 1, 1, 1)
 
