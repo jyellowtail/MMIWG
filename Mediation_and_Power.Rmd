@@ -28,16 +28,6 @@ data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
 
 ```
 
-```{r}
-duration<- import(here("Data", "Duration.csv"), setclass = "tbl_df")
-summary(duration$`Duration (in seconds)`)
-
-499.5/60
-896.1672/60
-1096.5/60
-3625/60
-```
-
 
 ```{r select_variables}
 
@@ -55,6 +45,18 @@ data <- data %>% filter(Race == 3)
 # Not filtering for race for this analysis but if we wanted to, code is below
 # %>% filter(race == "3") 
 
+
+```
+
+Demographics
+```{r Demographics}
+# N = 188
+
+# Gender
+table(data$Gender)
+
+# Age
+mean(data$Age.r, na.rm = TRUE)
 
 ```
 
@@ -177,10 +179,30 @@ Support <-
 
 # Mediation Analysis
 
+## Invisibility to Racism Minimization Mediation Model
+```{r}
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
+
+rm.in.multipleMediation <- '
+    RaceMini ~ Invisibility
+    VictimBlaming ~ Invisibility
+    StructuralForces ~ Invisibility
+    Support ~ Invisibility
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    VictimBlaming ~~ StructuralForces 
+'
+
+rm.in.fit <- sem(model = rm.in.multipleMediation, data = var)
+summary(rm.in.fit) 
+```
+
 ## Invisibility Mediation Model 
 ```{r Invisibility Mediation Model}
-
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
 in.multipleMediation <- '
     Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * Invisibility
@@ -194,9 +216,6 @@ in.multipleMediation <- '
 
 in.fit <- sem(model = in.multipleMediation, data = var)
 summary(in.fit)    
-
-in.lm <- lm(Support ~ Invisibility, data = var)
-summary(in.lm)
 
 ```
 
@@ -217,27 +236,6 @@ rm.fit <- sem(model = rm.multipleMediation, data = var)
 summary(rm.fit)    
 
 ```
-
-## Invisibility to Racism Minimization Mediation Model
-```{r}
-rm.in.multipleMediation <- '
-    RaceMini ~ Invisibility
-    VictimBlaming ~ Invisibility
-    StructuralForces ~ Invisibility
-    Support ~ Invisibility
-    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
-    VictimBlaming ~ a1 * RaceMini
-    StructuralForces ~ a2 * RaceMini
-    indirect1 := a1 * b1
-    indirect2 := a2 * b2
-    total    := c + (a1 * b1) + (a2 * b2)
-    VictimBlaming ~~ StructuralForces 
-'
-
-rm.in.fit <- sem(model = rm.in.multipleMediation, data = var)
-summary(rm.in.fit) 
-```
-
 
 # Prep for Power Analysis 
 

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Julisa" />
@@ -68,8 +68,6 @@ overflow: auto;
 margin-left: 2%;
 position: fixed;
 border: 1px solid #ccc;
-webkit-border-radius: 6px;
-moz-border-radius: 6px;
 border-radius: 6px;
 }
 
@@ -97,9 +95,14 @@ font-size: 12px;
 .tocify-subheader .tocify-subheader {
 text-indent: 30px;
 }
-
 .tocify-subheader .tocify-subheader .tocify-subheader {
 text-indent: 40px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 50px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 60px;
 }
 
 .tocify .tocify-item > a, .tocify .nav-list .nav-header {
@@ -503,13 +506,13 @@ float: none;
 
           item.append($("<a/>", {
 
-            "text": self.text()
+            "html": self.html()
 
           }));
 
         } else {
 
-          item.text(self.text());
+          item.html(self.html());
 
         }
 
@@ -1284,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1400,7 +1403,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1462,6 +1464,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1474,56 +1477,12 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 <style type="text/css">
 .code-folding-btn { margin-bottom: 4px; }
 </style>
-<script>
-$(document).ready(function () {
-  window.initializeCodeFolding("hide" === "show");
-});
-</script>
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3,h4,h5",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -1537,6 +1496,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1572,8 +1537,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -1633,27 +1596,27 @@ div.tocify {
 <div id="prepping-data" class="section level1">
 <h1><span class="header-section-number">1</span> Prepping Data</h1>
 <pre class="r"><code>library(here) #collaboration</code></pre>
-<pre><code>## here() starts at C:/Users/Julisa/Documents/MMIWG/MMIWG</code></pre>
+<pre><code>## here() starts at /Users/hframil/Desktop/Julisa/MMIWG</code></pre>
 <pre class="r"><code>library(rio) #import data
 library(tidyverse) #Tidy data</code></pre>
-<pre><code>## -- Attaching packages ---------------------------------------------- tidyverse 1.2.1 --</code></pre>
-<pre><code>## v ggplot2 3.1.1     v purrr   0.3.2
-## v tibble  2.1.1     v dplyr   0.8.3
-## v tidyr   0.8.3     v stringr 1.4.0
-## v readr   1.3.1     v forcats 0.4.0</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
+## ✓ tibble  2.1.3     ✓ dplyr   0.8.4
+## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(janitor) #clean-up variables</code></pre>
 <pre><code>## 
-## Attaching package: &#39;janitor&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## Attaching package: 'janitor'</code></pre>
+<pre><code>## The following objects are masked from 'package:stats':
 ## 
 ##     chisq.test, fisher.test</code></pre>
 <pre class="r"><code>library(psych) #recoding variables</code></pre>
 <pre><code>## 
-## Attaching package: &#39;psych&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:ggplot2&#39;:
+## Attaching package: 'psych'</code></pre>
+<pre><code>## The following objects are masked from 'package:ggplot2':
 ## 
 ##     %+%, alpha</code></pre>
 <pre class="r"><code>require(lavaan) #mediation model</code></pre>
@@ -1661,8 +1624,8 @@ library(tidyverse) #Tidy data</code></pre>
 <pre><code>## This is lavaan 0.6-5</code></pre>
 <pre><code>## lavaan is BETA software! Please report any bugs.</code></pre>
 <pre><code>## 
-## Attaching package: &#39;lavaan&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:psych&#39;:
+## Attaching package: 'lavaan'</code></pre>
+<pre><code>## The following object is masked from 'package:psych':
 ## 
 ##     cor2cov</code></pre>
 <pre class="r"><code>library(dplyr) # for selecting variables
@@ -1671,32 +1634,52 @@ library(shiny) # to load in power analysis
 data &lt;- import(here(&quot;Data&quot;, &quot;MMIWG.csv&quot;), setclass = &quot;tbl_df&quot;)</code></pre>
 <pre class="r"><code>#Select variables of interest and filter for White respondents
 
-data_tidy &lt;- data %&gt;%
-  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %&gt;%
-  clean_names() 
+# data_tidy &lt;- data %&gt;%
+#  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %&gt;%
+#  clean_names() %&gt;%
+#  filter(race == &quot;3&quot;)
 
-data_tidy &lt;- data_tidy[-c(1:21), ] # deleted empty rows
+data &lt;- data[-c(1:21), ] # deleted empty rows
+
+data &lt;- data %&gt;% filter(Race == 3)
 
 # Not filtering for race for this analysis but if we wanted to, code is below
 # %&gt;% filter(race == &quot;3&quot;) </code></pre>
+<p>Demographics</p>
+<pre class="r"><code># N = 188
+
+# Gender
+table(data$Gender)</code></pre>
+<pre><code>## 
+##   1   2 
+## 107  80</code></pre>
+<pre class="r"><code># Age
+mean(data$Age.r, na.rm = TRUE)</code></pre>
+<pre><code>## [1] 37.62162</code></pre>
 <p>Invsibility Composite</p>
 <pre class="r"><code># Higher values = greater invisibility
 
-data.in &lt;- data_tidy %&gt;%
-  dplyr::rename(ntv_invisibility_7 = invisibility1_13,
-         ntv_invisibility_8 = invisibility1_14,
-         ntv_invisibility_9 = invisibility1_15,
-         ntv_invisibility_10 = invisibility1_16,
-         ntv_invisibility_11 = invisibility1_17,
-         ntv_invisibility_12 = invisibility1_18)
+data.in &lt;- data %&gt;%
+  dplyr::rename(ntv_invisibility_1 = NtvInvisibility_1,
+                ntv_invisibility_2 = NtvInvisibility_2,
+                ntv_invisibility_3 = NtvInvisibility_3,
+                ntv_invisibility_5 = NtvInvisibility_4,
+                ntv_invisibility_6 = NtvInvisibility_5,
+                ntv_invisibility_7 = NtvInvisibility_6,
+                ntv_invisibility_8 = Invisibility1_13,
+                ntv_invisibility_9 = Invisibility1_14,
+                ntv_invisibility_10 = Invisibility1_15,
+                ntv_invisibility_11 = Invisibility1_16,
+                ntv_invisibility_12 = Invisibility1_17,
+                ntv_invisibility_13 = Invisibility1_18)
 
 in.raw &lt;- data.in %&gt;%
   dplyr::select(
-    ntv_invisibility_1:ntv_invisibility_12)
+    ntv_invisibility_1:ntv_invisibility_3, ntv_invisibility_5:ntv_invisibility_13)
 
-in.key &lt;- c(1, -1, 1, 1,
-           1, 1, 1, -1,
-           1, 1, 1, 1)
+in.key &lt;- c(1, -1, 1, 1, 1, 
+            1, 1, -1, 1, 1, 
+            1, 1)
 
 in.r &lt;-
   reverse.code(in.key,
@@ -1713,14 +1696,14 @@ Invisibility &lt;-
   multicon::composite(invisibility.df,
   rel = TRUE,
   nomiss = 0.6)</code></pre>
-<pre><code>##  raw_alpha std.alpha  G6(smc) average_r      S/N        ase     mean
-##  0.8254135 0.8234559 0.858293  0.279898 4.664307 0.01474296 4.077618
-##         sd  median_r
-##  0.9903723 0.2961588</code></pre>
+<pre><code>##  raw_alpha std.alpha   G6(smc) average_r      S/N        ase     mean        sd
+##  0.8246652 0.8224705 0.8605924 0.2785368 4.632865 0.01829367 3.965828 0.9916353
+##   median_r
+##  0.2544691</code></pre>
 <p>Racism Minimization Composite</p>
-<pre class="r"><code>racemini.raw &lt;- data_tidy %&gt;%
+<pre class="r"><code>racemini.raw &lt;- data %&gt;%
   dplyr::select(
-    racism_mini_1:racism_mini_10)
+    RacismMini_1:RacismMini_10)
 
 racemini.key &lt;- c(1, -1, 1, -1, -1,
                   -1, -1, 1, 1, 1)
@@ -1734,19 +1717,19 @@ racemini.df &lt;- as.data.frame(racemini.r)
 
 RaceMini &lt;-
   multicon::composite(racemini.df, rel = TRUE, nomiss = 0.6)</code></pre>
-<pre><code>##  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean
-##  0.9014259 0.9010962 0.9246288 0.4767367 9.110839 0.008886395 3.208452
-##       sd  median_r
-##  1.29369 0.4599182</code></pre>
+<pre><code>##  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean       sd
+##  0.9173078 0.9170203 0.9333396 0.5249662 11.05114 0.009029741 3.168853 1.355039
+##  median_r
+##  0.539718</code></pre>
 <p>Victim Blaming Composite</p>
-<pre class="r"><code>vicblame.raw &lt;- data_tidy %&gt;%
+<pre class="r"><code>vicblame.raw &lt;- data %&gt;%
   dplyr::select(
-    ab_activists,
-    ab_sex_work,
-    ab_rez,
-    ab_runaways,
-    ab_drug,
-    ab_criminal
+    AB_Activists,
+    AB_SexWork,
+    AB_Rez,
+    AB_Runaways,
+    AB_Drug,
+    AB_Criminal
     )
 
 #Took out the key and reverse coding since the direction did not change for any of these values. 
@@ -1754,44 +1737,32 @@ RaceMini &lt;-
 vicblame.df &lt;- as.data.frame(vicblame.raw)
 
 VictimBlaming &lt;- multicon::composite(vicblame.df, rel=TRUE, nomiss = 0.6)</code></pre>
-<pre><code>##  raw_alpha std.alpha   G6(smc) average_r      S/N         ase     mean
-##  0.8959268   0.89618 0.8835328 0.5899414 8.632056 0.009615972 3.098577
-##        sd  median_r
-##  1.335171 0.6178483</code></pre>
+<pre><code>##  raw_alpha std.alpha  G6(smc) average_r      S/N        ase     mean       sd
+##  0.8698103 0.8705909 0.860104 0.5285773 6.727432 0.01479777 2.853014 1.148606
+##   median_r
+##  0.5209358</code></pre>
 <p>Structural Forces Composite</p>
-<pre class="r"><code>structuralforces.raw &lt;- data_tidy %&gt;%
+<pre class="r"><code>structuralforces.raw &lt;- data %&gt;%
   dplyr::select(
-    ab_non_native_pers,
-    ab_citizens,
-    ab_male_worker,
-    ab_tribal_police,
-    ab_laws,
-    ab_society
+    AB_NonNative_pers,
+    AB_Citizens,
+    AB_MaleWorker,
+    AB_TribalPolice,
+    AB_Laws,
+    AB_Society
     )
 
-structuralforces.key &lt;- c(1, 1, 1, 1, 1, -1)
-
-structuralforces.r &lt;- reverse.code(structuralforces.key,
-                                structuralforces.raw,
-                                mini=1,
-                                maxi=7)
-
-structuralforces.df &lt;- as.data.frame(structuralforces.r)
+structuralforces.df &lt;- as.data.frame(structuralforces.raw)
 
 StructuralForces &lt;- multicon::composite(structuralforces.df, rel = TRUE, nomiss=0.6)</code></pre>
-<pre><code>## Warning in alpha(set): Some items were negatively correlated with the total scale and probably 
-## should be reversed.  
-## To do this, run the function again with the &#39;check.keys=TRUE&#39; option</code></pre>
-<pre><code>## Some items ( ab_society- ) were negatively correlated with the total scale and 
-## probably should be reversed.  
-## To do this, run the function again with the &#39;check.keys=TRUE&#39; option raw_alpha std.alpha   G6(smc)  average_r       S/N        ase     mean
-##  0.2515439 0.3631755 0.4711106 0.08679849 0.5702914 0.06522415 4.541637
-##         sd  median_r
-##  0.6645877 0.2459915</code></pre>
+<pre><code>##  raw_alpha std.alpha  G6(smc) average_r      S/N        ase     mean        sd
+##  0.7386548 0.7395072 0.714081 0.3211808 2.838878 0.02923551 4.697163 0.9609322
+##   median_r
+##  0.3486913</code></pre>
 <p>Support Composite</p>
 <pre class="r"><code># Higher values = more support
-sup &lt;- data_tidy %&gt;%
-  dplyr::select(sup_hash:sup_training)
+sup &lt;- data %&gt;%
+  dplyr::select(Sup_Hash:Sup_Training)
 
 sup.df &lt;- as.data.frame(sup)
 
@@ -1801,47 +1772,41 @@ Support &lt;-
   multicon::composite(sup.df,
   rel = TRUE,
   nomiss = 0.6)</code></pre>
-<pre><code>##  raw_alpha std.alpha  G6(smc) average_r      S/N         ase     mean
-##  0.8993628 0.8991696 0.903263 0.5602364 8.917642 0.009157493 3.461108
-##         sd  median_r
-##  0.9662042 0.5532629</code></pre>
+<pre><code>##  raw_alpha std.alpha   G6(smc) average_r      S/N        ase     mean       sd
+##  0.9038847 0.9039672 0.9106688 0.5735117 9.413111 0.01076006 3.382979 1.008733
+##   median_r
+##  0.5774154</code></pre>
 </div>
 <div id="mediation-analysis" class="section level1">
 <h1><span class="header-section-number">2</span> Mediation Analysis</h1>
-<div id="invisibility-mediation-model" class="section level2">
-<h2><span class="header-section-number">2.1</span> Invisibility Mediation Model</h2>
+<div id="invisibility-to-racism-minimization-mediation-model" class="section level2">
+<h2><span class="header-section-number">2.1</span> Invisibility to Racism Minimization Mediation Model</h2>
 <pre class="r"><code>var &lt;- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
 
-X &lt;- var$Invisibility
-M1 &lt;- var$VictimBlaming
-M2 &lt;- var$StructuralForces
-Y &lt;- var$Support
-
-in.mediate.data &lt;- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
-
-
-in.multipleMediation &lt;- &#39;
-    Y ~ b1 * M1 + b2 * M2 + c * X
-    M1 ~ a1 * X
-    M2 ~ a2 * X
+rm.in.multipleMediation &lt;- '
+    RaceMini ~ Invisibility
+    VictimBlaming ~ Invisibility
+    StructuralForces ~ Invisibility
+    Support ~ Invisibility
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
     indirect1 := a1 * b1
     indirect2 := a2 * b2
     total    := c + (a1 * b1) + (a2 * b2)
-    M1 ~~ M2 
-&#39;
+    VictimBlaming ~~ StructuralForces 
+'
 
-in.fit &lt;- sem(model = in.multipleMediation, data = in.mediate.data)
-summary(in.fit)    </code></pre>
-<pre><code>## lavaan 0.6-5 ended normally after 18 iterations
+rm.in.fit &lt;- sem(model = rm.in.multipleMediation, data = var)
+summary(rm.in.fit) </code></pre>
+<pre><code>## lavaan 0.6-5 ended normally after 19 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
-##   Number of free parameters                          9
+##   Number of free parameters                         14
 ##                                                       
-##                                                   Used       Total
-##   Number of observations                           280         282
-##                                                                   
+##   Number of observations                           188
+##                                                       
 ## Model Test User Model:
 ##                                                       
 ##   Test statistic                                 0.000
@@ -1854,64 +1819,124 @@ summary(in.fit)    </code></pre>
 ##   Standard errors                             Standard
 ## 
 ## Regressions:
-##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##   Y ~                                                 
-##     M1        (b1)   -0.091    0.044   -2.061    0.039
-##     M2        (b2)    0.475    0.081    5.845    0.000
-##     X          (c)   -0.087    0.059   -1.462    0.144
-##   M1 ~                                                
-##     X         (a1)    0.538    0.074    7.271    0.000
-##   M2 ~                                                
-##     X         (a2)    0.021    0.040    0.525    0.600
+##                      Estimate  Std.Err  z-value  P(&gt;|z|)
+##   RaceMini ~                                            
+##     Invisblty           0.310    0.097    3.195    0.001
+##   VictimBlaming ~                                       
+##     Invisblty           0.218    0.076    2.854    0.004
+##   StructuralForces ~                                    
+##     Invisblty           0.170    0.060    2.814    0.005
+##   Support ~                                             
+##     Invisblty          -0.167    0.067   -2.485    0.013
+##     VctmBlmng (b1)     -0.137    0.062   -2.206    0.027
+##     StrctrlFr (b2)      0.369    0.079    4.674    0.000
+##     RaceMini   (c)     -0.087    0.062   -1.395    0.163
+##   VictimBlaming ~                                       
+##     RaceMini  (a1)      0.333    0.056    5.950    0.000
+##   StructuralForces ~                                    
+##     RaceMini  (a2)     -0.404    0.044   -9.165    0.000
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##  .M1 ~~                                               
-##    .M2                0.057    0.049    1.177    0.239
+##  .VictimBlaming ~~                                    
+##    .StructuralFrcs    0.105    0.059    1.780    0.075
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##    .Y                 0.811    0.069   11.832    0.000
-##    .M1                1.497    0.127   11.832    0.000
-##    .M2                0.440    0.037   11.832    0.000
+##    .RaceMini          1.732    0.179    9.695    0.000
+##    .VictimBlaming     1.019    0.105    9.695    0.000
+##    .StructuralFrcs    0.634    0.065    9.695    0.000
+##    .Support           0.731    0.075    9.695    0.000
 ## 
 ## Defined Parameters:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##     indirect1        -0.049    0.025   -1.983    0.047
-##     indirect2         0.010    0.019    0.523    0.601
-##     total            -0.126    0.058   -2.169    0.030</code></pre>
+##     indirect1        -0.046    0.022   -2.068    0.039
+##     indirect2        -0.149    0.036   -4.164    0.000
+##     total            -0.282    0.050   -5.595    0.000</code></pre>
+</div>
+<div id="invisibility-mediation-model" class="section level2">
+<h2><span class="header-section-number">2.2</span> Invisibility Mediation Model</h2>
+<pre class="r"><code>in.multipleMediation &lt;- '
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * Invisibility
+    VictimBlaming ~ a1 * Invisibility
+    StructuralForces ~ a2 * Invisibility
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    VictimBlaming ~~ StructuralForces 
+'
+
+in.fit &lt;- sem(model = in.multipleMediation, data = var)
+summary(in.fit)    </code></pre>
+<pre><code>## lavaan 0.6-5 ended normally after 14 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of free parameters                          9
+##                                                       
+##   Number of observations                           188
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                 0.000
+##   Degrees of freedom                                 0
+## 
+## Parameter Estimates:
+## 
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+##   Standard errors                             Standard
+## 
+## Regressions:
+##                      Estimate  Std.Err  z-value  P(&gt;|z|)
+##   Support ~                                             
+##     VctmBlmng (b1)     -0.172    0.057   -3.002    0.003
+##     StrctrlFr (b2)      0.431    0.066    6.531    0.000
+##     Invisblty  (c)     -0.185    0.066   -2.800    0.005
+##   VictimBlaming ~                                       
+##     Invisblty (a1)      0.321    0.081    3.960    0.000
+##   StructuralForces ~                                    
+##     Invisblty (a2)      0.044    0.071    0.626    0.531
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)
+##  .VictimBlaming ~~                                    
+##    .StructuralFrcs   -0.128    0.077   -1.652    0.099
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)
+##    .Support           0.739    0.076    9.695    0.000
+##    .VictimBlaming     1.211    0.125    9.695    0.000
+##    .StructuralFrcs    0.917    0.095    9.695    0.000
+## 
+## Defined Parameters:
+##                    Estimate  Std.Err  z-value  P(&gt;|z|)
+##     indirect1        -0.055    0.023   -2.392    0.017
+##     indirect2         0.019    0.031    0.623    0.533
+##     total            -0.222    0.072   -3.061    0.002</code></pre>
 </div>
 <div id="racism-minimization-mediation-model" class="section level2">
-<h2><span class="header-section-number">2.2</span> Racism Minimization Mediation Model</h2>
-<pre class="r"><code>X &lt;- var$RaceMini
-M1 &lt;- var$VictimBlaming
-M2 &lt;- var$StructuralForces
-Y &lt;- var$Support
-
-rm.mediate.data &lt;- data.frame(X = X, Y = Y, M1 = M1, M2 = M2)
-
-
-rm.multipleMediation &lt;- &#39;
-    Y ~ b1 * M1 + b2 * M2 + c * X
-    M1 ~ a1 * X
-    M2 ~ a2 * X
+<h2><span class="header-section-number">2.3</span> Racism Minimization Mediation Model</h2>
+<pre class="r"><code>rm.multipleMediation &lt;- '
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
     indirect1 := a1 * b1
     indirect2 := a2 * b2
     total    := c + (a1 * b1) + (a2 * b2)
-    M1 ~~ M2 
-&#39;
+    VictimBlaming ~~ StructuralForces 
+'
 
-rm.fit &lt;- sem(model = rm.multipleMediation, data = rm.mediate.data)
+rm.fit &lt;- sem(model = rm.multipleMediation, data = var)
 summary(rm.fit)    </code></pre>
-<pre><code>## lavaan 0.6-5 ended normally after 18 iterations
+<pre><code>## lavaan 0.6-5 ended normally after 15 iterations
 ## 
 ##   Estimator                                         ML
 ##   Optimization method                           NLMINB
 ##   Number of free parameters                          9
 ##                                                       
-##                                                   Used       Total
-##   Number of observations                           280         282
-##                                                                   
+##   Number of observations                           188
+##                                                       
 ## Model Test User Model:
 ##                                                       
 ##   Test statistic                                 0.000
@@ -1924,32 +1949,32 @@ summary(rm.fit)    </code></pre>
 ##   Standard errors                             Standard
 ## 
 ## Regressions:
-##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##   Y ~                                                 
-##     M1        (b1)    0.003    0.045    0.072    0.943
-##     M2        (b2)    0.327    0.083    3.938    0.000
-##     X          (c)   -0.249    0.048   -5.141    0.000
-##   M1 ~                                                
-##     X         (a1)    0.489    0.054    9.001    0.000
-##   M2 ~                                                
-##     X         (a2)   -0.137    0.030   -4.635    0.000
+##                      Estimate  Std.Err  z-value  P(&gt;|z|)
+##   Support ~                                             
+##     VctmBlmng (b1)     -0.165    0.062   -2.643    0.008
+##     StrctrlFr (b2)      0.335    0.079    4.240    0.000
+##     RaceMini   (c)     -0.117    0.062   -1.891    0.059
+##   VictimBlaming ~                                       
+##     RaceMini  (a1)      0.369    0.056    6.632    0.000
+##   StructuralForces ~                                    
+##     RaceMini  (a2)     -0.376    0.044   -8.576    0.000
 ## 
 ## Covariances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##  .M1 ~~                                               
-##    .M2                0.180    0.046    3.903    0.000
+##  .VictimBlaming ~~                                    
+##    .StructuralFrcs    0.140    0.062    2.252    0.024
 ## 
 ## Variances:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##    .Y                 0.746    0.063   11.832    0.000
-##    .M1                1.380    0.117   11.832    0.000
-##    .M2                0.409    0.035   11.832    0.000
+##    .Support           0.755    0.078    9.695    0.000
+##    .VictimBlaming     1.063    0.110    9.695    0.000
+##    .StructuralFrcs    0.660    0.068    9.695    0.000
 ## 
 ## Defined Parameters:
 ##                    Estimate  Std.Err  z-value  P(&gt;|z|)
-##     indirect1         0.002    0.022    0.072    0.943
-##     indirect2        -0.045    0.015   -3.001    0.003
-##     total            -0.292    0.041   -7.098    0.000</code></pre>
+##     indirect1        -0.061    0.025   -2.455    0.014
+##     indirect2        -0.126    0.033   -3.801    0.000
+##     total            -0.304    0.050   -6.138    0.000</code></pre>
 </div>
 </div>
 <div id="prep-for-power-analysis" class="section level1">
@@ -1961,44 +1986,21 @@ summary(rm.fit)    </code></pre>
 (corr &lt;- corr.test(var, use = &quot;pairwise.complete.obs&quot;)) # correlations for power analysis</code></pre>
 <pre><code>## Call:corr.test(x = var, use = &quot;pairwise.complete.obs&quot;)
 ## Correlation matrix 
-##                  Support VictimBlaming StructuralForces Invisibility
-## Support             1.00         -0.14             0.31        -0.13
-## VictimBlaming      -0.14          1.00             0.08         0.40
-## StructuralForces    0.31          0.08             1.00         0.03
-## Invisibility       -0.13          0.40             0.03         1.00
-## RaceMini           -0.39          0.47            -0.27         0.25
-##                  RaceMini
-## Support             -0.39
-## VictimBlaming        0.47
-## StructuralForces    -0.27
-## Invisibility         0.25
-## RaceMini             1.00
+##                  Support VictimBlaming StructuralForces Invisibility RaceMini
+## Support             1.00         -0.29             0.42        -0.22    -0.41
+## VictimBlaming      -0.29          1.00            -0.10         0.28     0.44
+## StructuralForces    0.42         -0.10             1.00         0.05    -0.53
+## Invisibility       -0.22          0.28             0.05         1.00     0.23
+## RaceMini           -0.41          0.44            -0.53         0.23     1.00
 ## Sample Size 
-##                  Support VictimBlaming StructuralForces Invisibility
-## Support              281           281              280          280
-## VictimBlaming        281           281              280          280
-## StructuralForces     280           280              280          280
-## Invisibility         280           280              280          280
-## RaceMini             280           280              280          280
-##                  RaceMini
-## Support               280
-## VictimBlaming         280
-## StructuralForces      280
-## Invisibility          280
-## RaceMini              280
+## [1] 188
 ## Probability values (Entries above the diagonal are adjusted for multiple tests.) 
-##                  Support VictimBlaming StructuralForces Invisibility
-## Support             0.00          0.09              0.0         0.09
-## VictimBlaming       0.02          0.00              0.4         0.00
-## StructuralForces    0.00          0.20              0.0         0.60
-## Invisibility        0.03          0.00              0.6         0.00
-## RaceMini            0.00          0.00              0.0         0.00
-##                  RaceMini
-## Support                 0
-## VictimBlaming           0
-## StructuralForces        0
-## Invisibility            0
-## RaceMini                0
+##                  Support VictimBlaming StructuralForces Invisibility RaceMini
+## Support                0          0.00             0.00         0.01     0.00
+## VictimBlaming          0          0.00             0.31         0.00     0.00
+## StructuralForces       0          0.16             0.00         0.53     0.00
+## Invisibility           0          0.00             0.53         0.00     0.01
+## RaceMini               0          0.00             0.00         0.00     0.00
 ## 
 ##  To see confidence intervals of the correlations, print with the short=FALSE option</code></pre>
 </div>
@@ -2028,6 +2030,54 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4,h5",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
