@@ -24,7 +24,10 @@ require(lavaan) #mediation model
 library(dplyr) # for selecting variables
 library(shiny) # to load in power analysis
 
-data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
+# data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
+
+data <- read.csv("C:/Users/Julisa/Documents/MMIWG/MMIWG/Data/MMIWG.csv")
+
 
 ```
 
@@ -102,6 +105,22 @@ Invisibility <-
   rel = TRUE,
   nomiss = 0.6)
 ```
+
+# Determining number of factors to extract
+```{r}
+ev.in <- eigen(cor(invisibility.df, use = "pairwise.complete.obs"))
+ap.in <- parallel(subject=nrow(invisibility.df),var=ncol(invisibility.df),
+               rep = 100, cent = .05)
+nS.in <- nScree(x=ev.in$values, apparallel = ap.in$eigen$qevpea)
+plotnScree(nS.in)
+```
+
+# Factor loadings
+```{r}
+fit.in <- factanal(na.omit(invisibility.df), 2, rotation = "varimax")
+print(fit.in, digits = 2, cutoff = .3, sort = TRUE)
+```
+
 
 Racism Minimization Composite
 ```{r race_mini_composite}
