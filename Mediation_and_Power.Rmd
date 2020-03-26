@@ -117,7 +117,8 @@ plotnScree(nS.in)
 
 # Factor loadings
 ```{r}
-fit.in <- factanal(na.omit(invisibility.df), 2, rotation = "varimax")
+fit.in <- factanal(na.omit(invisibility.df), 4, rotation = "varimax")
+
 print(fit.in, digits = 2, cutoff = .3, sort = TRUE)
 ```
 
