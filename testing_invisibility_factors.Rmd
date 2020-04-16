@@ -1,19 +1,11 @@
 ---
-title: "Power Analysis & Mediation"
+title: "EFA_invisibility"
 author: "Julisa"
-date: "2/7/2020"
-output: 
-  html_document:
-    toc: True
-    toc_depth: 5
-    toc_float: 
-      collapsed: False
-    number_sections: True
-    code_folding: hide
+date: "3/30/2020"
+output: html_document
 ---
 
-# Prepping Data 
-```{r libraries_and_dataset}
+```{r Loading packages}
 
 library(here) #collaboration
 library(rio) #import data
@@ -27,50 +19,51 @@ library(hablar)
 library(parallel)
 library(GPArotation)
 
-# data <- import(here("Data", "MMIWG.csv"), setclass = "tbl_df")
+```
 
-data <- read.csv("C:/Users/Julisa/Documents/MMIWG/MMIWG/Data/MMIWG.csv", header = T, sep = ",", na=-99, stringsAsFactors = FALSE)
+```{r Tidying dataset}
+
+# loading in raw data set
+data <- read.csv("C:/Users/Julisa/Documents/MMIWG/MMIWG/Data/RawData.csv", header = T, sep = ",", na=-99, stringsAsFactors = FALSE)
+
+# deleting first row because it is unecessary 
+data <- data[-c(1),]
+
+# retyping data so empty cases are read as NA
+data <- data %>% retype()
+
+# Creating Preview variable. 1 = Finished survey, 0 = Not finished survey
+data <- mutate(data, Preview = ifelse(V10 == 1, 1, 0))
+
+# Filtering only finished surveys
+data <- data %>% filter(Preview == 1)
+
+# Prepping by setting NA to 0 for Race variables 
+data$Race_1[is.na(data$Race_1)] <- 0
+data$Race_2[is.na(data$Race_2)] <- 0
+data$Race_3[is.na(data$Race_3)] <- 0
+data$Race_4[is.na(data$Race_4)] <- 0
+data$Race_5[is.na(data$Race_5)] <- 0
+data$Race_6[is.na(data$Race_6)] <- 0
+data$Race_7[is.na(data$Race_7)] <- 0
+
+# Creating Race variable 
+data <- data %>% mutate(Race = case_when(
+                        Race_1 == 1 & Race_2 == 0 & Race_3 == 0 & Race_4 == 0 & Race_5 == 0 & Race_6 == 0 & Race_7 == 0 ~ "1",
+                        Race_1 == 0 & Race_2 == 1 & Race_3 == 0 & Race_4 == 0 & Race_5 == 0 & Race_6 == 0 & Race_7 == 0 ~ "2",
+                        Race_1 == 0 & Race_2 == 0 & Race_3 == 1 & Race_4 == 0 & Race_5 == 0 & Race_6 == 0 & Race_7 == 0 ~ "3",
+                        Race_1 == 0 & Race_2 == 0 & Race_3 == 0 & Race_4 == 1 & Race_5 == 0 & Race_6 == 0 & Race_7 == 0 ~ "4",
+                        Race_1 == 0 & Race_2 == 0 & Race_3 == 0 & Race_4 == 0 & Race_5 == 1 & Race_6 == 0 & Race_7 == 0 ~ "5",
+                        Race_1 == 0 & Race_2 == 0 & Race_3 == 0 & Race_4 == 0 & Race_5 == 0 & Race_6 == 1 & Race_7 == 0 ~ "6",
+                        Race_1 == 0 & Race_2 == 0 & Race_3 == 0 & Race_4 == 0 & Race_5 == 0 & Race_6 == 0 & Race_7 == 1 ~ "7"))
+
+# Filtering by race 
 data <- data %>% filter(Race == 3)
 
-raw <- read.csv("C:/Users/Julisa/Documents/MMIWG/MMIWG/Data/RawData.csv", header = T, sep = ",", na=-99, stringsAsFactors = FALSE)
-
-raw <- raw %>% retype()
-raw <- raw %>% filter(Race == 3)
-
-data <- raw
-
-
+# Saved tidy version of data 
+# write.csv(data, 'TidyData.csv')
 
 ```
-
-
-```{r select_variables}
-
-#Select variables of interest and filter for White respondents
-
-# data_tidy <- data %>%
-#  dplyr::select(Race, Age.r, Gender, Sup_Hash:Sup_Training, NtvInvisibility_1:Invisibility1_18, IN_Violence, RacismMini_1:RacismMini_10, AB_Activists:AB_Laws) %>%
-#  clean_names() %>%
-#  filter(race == "3")
-
-# Not filtering for race for this analysis but if we wanted to, code is below
-# %>% filter(race == "3") 
-
-
-```
-
-Demographics
-```{r Demographics}
-# N = 188
-
-# Gender
-table(data$Gender)
-
-# Age
-mean(data$Age.r, na.rm = TRUE)
-
-```
-
 Invsibility Composite
 ```{r invisibility_composite}
 # Higher values = greater invisibility
@@ -112,10 +105,6 @@ Invisibility <-
 
 Invisibility Factor loadings
 ```{r}
-fit.in <- factanal(na.omit(invisibility.df), 2, rotation = "varimax")
-print(fit.in, digits = 2, cutoff = .3, sort = TRUE)
-
-# Another way to do analysis
 corMat <- cor(invisibility.df, use = "pairwise.complete.obs")
 solutionX <- fa(r = corMat, nfactors = 3, rotate = "varimax", fm = "pa")
 solutionX
@@ -123,7 +112,7 @@ solutionX
 
 Creating New Factors
 ```{r}
-Fac1 <- data %>% select(
+Fac1.raw <- data %>% select(
   NtvInvisibility_4,
   NtvInvisibility_5,
   NtvInvisibility_6,
@@ -133,32 +122,57 @@ Fac1 <- data %>% select(
   Invisibility1_18
 )
 
-Fac1 <- multicon::composite(Fac1,
+Fac1 <- multicon::composite(Fac1.raw,
   rel = TRUE,
   nomiss = 0.6)
 
-Fac2 <- data %>% select(
+Fac2.raw <- data %>% select(
   NtvInvisibility_1,
   NtvInvisibility_2,
   NtvInvisibility_3
 )
 
+Fac2.key <- c(1, -1, 1)
 
+Fac2.r <-
+  reverse.code(Fac2.key,
+               Fac2.raw,
+               mini = 1,
+               maxi = 7)
 
-Fac2 <- multicon::composite(Fac2,
+Fac2 <- multicon::composite(Fac2.raw,
   rel = TRUE,
   nomiss = 0.6)
 
-Fac3 <- data %>% select(
+Fac2_sans2 <- data %>% select(
+  NtvInvisibility_1,
+  NtvInvisibility_3
+)
+
+Fac2_sans2 <- multicon::composite(Fac2_sans2,
+  rel = TRUE,
+  nomiss = 0.6)
+
+Fac3.raw <- data %>% select(
   Invisibility1_13,
   Invisibility1_14
 )
 
-Fac3 <- multicon::composite(Fac3,
+Fac3.key <- c(1, -1)
+
+Fac3.r <-
+  reverse.code(Fac3.key,
+               Fac3.raw,
+               mini = 1,
+               maxi = 7)
+
+Fac3 <- multicon::composite(Fac3.r,
   rel = TRUE,
   nomiss = 0.6)
-```
 
+cor(Support, Fac2)
+cor(Support, Fac2_sans2)
+```
 
 Racism Minimization Composite
 ```{r race_mini_composite}
@@ -238,7 +252,7 @@ Support <-
 
 ## Invisibility to Racism Minimization Mediation Model
 ```{r}
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini, Fac1, Fac2)
+var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini, Fac1, Fac2, Fac2_sans2)
 
 rm.in.multipleMediation <- '
     RaceMini ~ Invisibility
@@ -256,6 +270,8 @@ rm.in.multipleMediation <- '
 
 rm.in.fit <- sem(model = rm.in.multipleMediation, data = var)
 summary(rm.in.fit) 
+
+
 ```
 
 ## Factor 1 Model
@@ -298,15 +314,39 @@ fac2.multipleMediation <- '
 
 fac2.fit <- sem(model = fac2.multipleMediation, data = var)
 summary(fac2.fit) 
+
 ```
 
-## Invisibility Mediation Model 
-```{r Invisibility Mediation Model}
+# Factor 2 model wihout reverse scored item
+```{r}
+
+fac2.sans2.multipleMediation <- '
+    RaceMini ~ Fac2_sans2
+    VictimBlaming ~ Fac2_sans2
+    StructuralForces ~ Fac2_sans2
+    Support ~ Fac2_sans2
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
+    VictimBlaming ~ a1 * RaceMini
+    StructuralForces ~ a2 * RaceMini
+    indirect1 := a1 * b1
+    indirect2 := a2 * b2
+    total    := c + (a1 * b1) + (a2 * b2)
+    VictimBlaming ~~ StructuralForces 
+'
+
+fac2.sans2.fit <- sem(model = fac2.sans2.multipleMediation, data = var)
+summary(fac2.sans2.fit) 
+
+```
+
+
+## Smaller Invisibility Mediation Model with Factor 2 
+```{r Smaller mediation model}
 
 in.multipleMediation <- '
-    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * Invisibility
-    VictimBlaming ~ a1 * Invisibility
-    StructuralForces ~ a2 * Invisibility
+    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * Fac2_sans2
+    VictimBlaming ~ a1 * Fac2_sans2
+    StructuralForces ~ a2 * Fac2_sans2
     indirect1 := a1 * b1
     indirect2 := a2 * b2
     total    := c + (a1 * b1) + (a2 * b2)
@@ -318,36 +358,3 @@ summary(in.fit)
 
 ```
 
-## Racism Minimization Mediation Model
-```{r Racism Minimization Mediation Model}
-
-rm.multipleMediation <- '
-    Support ~ b1 * VictimBlaming + b2 * StructuralForces + c * RaceMini
-    VictimBlaming ~ a1 * RaceMini
-    StructuralForces ~ a2 * RaceMini
-    indirect1 := a1 * b1
-    indirect2 := a2 * b2
-    total    := c + (a1 * b1) + (a2 * b2)
-    VictimBlaming ~~ StructuralForces 
-'
-
-rm.fit <- sem(model = rm.multipleMediation, data = var)
-summary(rm.fit)    
-
-```
-
-# Prep for Power Analysis 
-
-## Correlations needed for Power Analysis
-```{r Prep for Power analysis}
-var <- data.frame(Support, VictimBlaming, StructuralForces, Invisibility, RaceMini)
-
-(corr <- corr.test(var, use = "pairwise.complete.obs")) # correlations for power analysis
-```
-
-## Link to Power Analysis Calculator in Code Below
-```{r Power Analysis Calculator}
-# runGitHub("mc_power_med", "schoam4") 
-# this code takes you to site for power analysis calculator
-# here is link - https://schoemanna.shinyapps.io/mc_power_med/
-```
